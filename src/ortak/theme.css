@@ -1,0 +1,20 @@
+body {
+    background-color: black;
+    padding: 15px;
+}
+
+input ~ label {
+    border-radius: 4px;
+}
+
+li.p-unselectable-text {
+    flex: 1;
+}
+
+.p-tabview-title {
+    margin: auto !important;
+}
+
+.hata {
+    color: var(--red-500);
+}

@@ -1,0 +1,8 @@
+.codeyzer-beniac {
+    z-index: 9999999;
+    position: fixed;
+    right: 50px;
+    top: 50px;
+    width: 450px;
+    border-radius: 4px;
+}
