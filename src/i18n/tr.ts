@@ -122,6 +122,7 @@ export default {
     "anaEkranAyarlar.otomatikDoldur.etkin": "Otomatik doldurma etkin",
     "anaEkranAyarlar.otomatikDoldur.etkinlestir": "Otomatik doldurma etkinleştir",
     "anaEkranAyarlar.otomatikDoldur.desteklenmiyor": "Otomatik doldurma desteklenmiyor",
+    "anaEkranAyarlar.otomatikDoldur.gelismisAyarlar.label": "Gelişmiş ayarlar",
     "anaEkranAyarlar.cikisYap.label": "Çıkış Yap",     
 
     // Popup Şifre Yönetici Panel
@@ -143,7 +144,7 @@ export default {
     "autoCompleteSifrePanel.sifreBulunamadi.sutun": "Şifre bulunamadı",
 
     // Content Script
-    "contentScript.yeniSifreBulundu": "Yeni şifre bulundu.<br>Eklemek için plugin ikonuna basınız.",
+    "contentScript.yeniSifreBulundu": "Yeni şifre bulundu. Eklemek için plugin ikonuna basınız.",
 
     // Gelişmiş Ayarlar Ana Panel
     "gelismisAyarlarAnaPanel.hosgeldiniz.title": "Codeyzer Pass'e Hoş Geldiniz",

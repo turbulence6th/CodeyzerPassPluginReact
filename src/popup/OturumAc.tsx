@@ -4,7 +4,7 @@ import { hashle } from '../ortak/CryptoUtil';
 import { dogrula, yeni } from '../ortak/KullaniciApi';
 import { Button } from 'primereact/button';
 import { useAppDispatch } from '..';
-import { kullaniciBelirle } from '../ortak/CodeyzerReducer';
+import { kullaniciBelirle, sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
 import { useValidator } from '@validator.tool/hook';
 import { classNames } from 'primereact/utils';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +26,8 @@ const OturumAc = () => {
                 kullaniciKimlik,
                 kullaniciAdi,
                 sifre
-            }))
+            }));
+            dispatch(sifreGuncelDurumBelirle(false));
         } 
     };
 
@@ -44,12 +45,13 @@ const OturumAc = () => {
                 kullaniciKimlik,
                 kullaniciAdi,
                 sifre
-            }))
+            }));
+            dispatch(sifreGuncelDurumBelirle(false));
         }
     };
       
     return (
-        <div>
+        <div style={{paddingLeft: '5px', paddingRight: '5px'}}>
             <div className='flex justify-content-center'>
                 <h2>{t('oturumAc.baslik')}</h2>
             </div>

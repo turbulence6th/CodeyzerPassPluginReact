@@ -32,7 +32,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "/contentScript/contentScript.js"
+        "/contentScript/contentScript.js",
+        "/index.html"
       ],
       "matches": ["<all_urls>"]
     }

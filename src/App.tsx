@@ -3,11 +3,14 @@ import { useSelector } from 'react-redux';
 import { RootState, AygitYoneticiKullan, useAppDispatch } from '.';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { mesajBelirle } from './ortak/CodeyzerReducer';
+import { hariciSifreDesifreListesiBelirle, hariciSifreListesiBelirle, mesajBelirle, sifreGuncelDurumBelirle } from './ortak/CodeyzerReducer';
 import axios from 'axios';
 import { Cevap } from './ortak/Cevap';
 import { MesajTipi } from './ortak/BildirimMesaji';
 import { useTranslation } from 'react-i18next';
+import { getir } from './ortak/HariciSifreApi';
+import { HariciSifreIcerik } from './ortak/HariciSifreDTO';
+import { desifreEt } from './ortak/CryptoUtil';
 
 const mesajTip2PrimeType = (tip: MesajTipi) => {
   switch(tip) {
@@ -27,13 +30,16 @@ function App() {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation();
   const [AnaBilesen, anaBilesenDegistir] = useState<React.LazyExoticComponent<() => JSX.Element>>();
+  const hariciSifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreListesi);
+  const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
+  const sifreGuncelDurum = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifreGuncelDurum);
 
   useEffect(() => {
     axios.interceptors.response.clear();
     axios.interceptors.response.use((response) => {
       const cevap: Cevap<any> = response.data;
       if (!cevap.basarili) {
-        toast.current!.show({ severity: 'error', detail: t(cevap.mesaj) });
+        toast.current!.show({ severity: 'error', detail: t(cevap.mesaj), sticky:true });
       }
       return response;
     }, error => {
@@ -46,10 +52,16 @@ function App() {
 
     if (app === 'GelismisAyarlar') {
       anaBilesenDegistir(lazy(() => import('./iframe/GelismisAyarlar')));
+    } else if (app === 'SifreBulundu') {
+      anaBilesenDegistir(lazy(() => import('./iframe/SifreBulundu')));
     } else {
       anaBilesenDegistir(lazy(() => import('./popup/Popup')));
-      document.body.style.height = '600px';
-      document.body.style.width = '394px';
+    }
+
+    if (isInPopup()) {
+      const html = document.querySelector('html');
+      html!.style.height = '600px';
+      html!.style.width = '350px';
     }
   }, []);
 
@@ -57,7 +69,7 @@ function App() {
     aygitYonetici?.mevcutDil().then(dil => {
       i18n.changeLanguage(dil);
     })
-  }, [aygitYonetici])
+  }, [aygitYonetici]);
 
   useEffect(() => {
     if (mesaj) {
@@ -65,6 +77,33 @@ function App() {
       dispatch(mesajBelirle(undefined));
     }
   }, [mesaj, dispatch]);
+
+  useEffect(() => {
+      if (!sifreGuncelDurum && kullanici) {
+        (async () => {
+          const cevap = await getir({ kullaniciKimlik: kullanici.kullaniciKimlik });
+          dispatch(hariciSifreListesiBelirle(cevap.sonuc));
+          dispatch(sifreGuncelDurumBelirle(true));
+      })();
+    }
+  }, [sifreGuncelDurum, kullanici]);
+
+  useEffect(() => {
+    const hariciSifreDesifreListesi = hariciSifreListesi.map(x => {
+        const hariciSifreIcerik: HariciSifreIcerik = JSON.parse(desifreEt(x.icerik, kullanici.sifre));
+        return {
+            kimlik: x.kimlik,
+            icerik: hariciSifreIcerik,
+        }
+    });
+    dispatch(hariciSifreDesifreListesiBelirle(hariciSifreDesifreListesi));
+    aygitYonetici?.sifreListesiGuncelle();
+  }, [hariciSifreListesi]);
+
+  const isInPopup = function() {
+    // @ts-ignore
+    return window.chrome?.extension?.getViews({ type: "popup" })[0] === window;
+  }
 
   return (
     <>

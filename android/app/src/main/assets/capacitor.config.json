@@ -1,0 +1,11 @@
+{
+	"appId": "com.codeyzer.android",
+	"appName": "Codeyzer Pass",
+	"webDir": "build",
+	"bundledWebRuntime": false,
+	"server": {
+		"allowNavigation": [
+			"192.168.1.101"
+		]
+	}
+}

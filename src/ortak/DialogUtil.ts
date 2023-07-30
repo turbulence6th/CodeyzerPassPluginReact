@@ -1,13 +1,13 @@
 import { TFunction } from "i18next";
 import { confirmDialog } from "primereact/confirmdialog";
 
-export const dialogGoster = (t: TFunction, baslikAnahtar: string, mesajAnahtar: string, onay: () => {}) => {
+export const dialogGoster = (t: TFunction, baslik: string, mesaj: React.ReactNode, onay: () => {}) => {
     confirmDialog({
-        message: t(mesajAnahtar),
-        header: t(baslikAnahtar),
-        icon: 'pi pi-exclamation-triangle',
+        message: mesaj,
+        header: baslik,
         acceptLabel: t('popupOnayPanel.onayla.icerik'),
         rejectLabel: t('popupOnayPanel.iptal.icerik'),
-        accept: onay
+        accept: onay,
+        closable: false
     });
 }

@@ -1,5 +1,6 @@
 import AygitYonetici from "./AygitYonetici";
-import PlatformTipi from "./PlatformTipi";
+import PlatformTipi from "../ortak/PlatformTipi";
+import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
 
 class ChromeAygitYonetici extends AygitYonetici {
 
@@ -83,6 +84,25 @@ class ChromeAygitYonetici extends AygitYonetici {
     pluginUrlGetir(url: string) {
         // @ts-ignore
         return chrome.runtime.getURL(url);
+    }
+
+    override async otomatikDoldurBilgi(): Promise<{ etkin: boolean, destek: boolean }> {
+        return {
+            etkin: true,
+            destek: true
+        }
+    }
+
+    override async otomatikDoldurEtkinlestir(): Promise<void> {
+        
+    }
+
+    override async sifreListesiGuncelle(): Promise<void> {
+        
+    }
+
+    override async androidPaketGetir(): Promise<AndroidPaketSecenek[]> {
+        return [];
     }
 }
 

@@ -15,7 +15,7 @@ interface HariciSifreDesifreTabloSatir extends HariciSifreDesifre {
 
 const Kasa = () => {
 
-    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreDesifreListesi);
+    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const aygitYonetici = AygitYoneticiKullan();
     const [hariciSifreDesifreTabloSatirListesi, hariciSifreDesifreTabloSatirListesiDegistir] = useState<HariciSifreDesifreTabloSatir[]>();
     const dispatch = useAppDispatch();
@@ -60,6 +60,19 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <InputText 
                             value={hsd.icerik.platform} 
+                            className='w-full'
+                        />
+                )}
+                className="p-inputtext-sm"
+                sortable
+            />
+            <Column 
+                field='icerik.androidPaket'
+                header="Android" 
+                body={
+                    (hsd: HariciSifreDesifreTabloSatir) => (
+                        <InputText 
+                            value={hsd.icerik.androidPaket} 
                             className='w-full'
                         />
                 )}

@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/clipboard": "^5.0.0",
+    "@capacitor/core": "^5.0.0",
+    "@capacitor/device": "^5.0.0",
+    "@capacitor/preferences": "^5.0.0",
+    "@capacitor/toast": "^5.0.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -37,6 +43,8 @@
     "start:web": "env-cmd -f ./.env.web react-scripts start",
     "build": "react-scripts build",
     "build:chrome": "env-cmd -f ./.env.chrome react-scripts build",
+    "build:android": "env-cmd -f ./.env.android react-scripts build && npx cap sync",
+    "openAndroid": "npx cap open android",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -59,6 +67,7 @@
     ]
   },
   "devDependencies": {
+    "@capacitor/cli": "^5.0.0",
     "@types/crypto-js": "^4.1.1",
     "@types/redux-state-sync": "^3.1.5",
     "env-cmd": "^10.1.0"

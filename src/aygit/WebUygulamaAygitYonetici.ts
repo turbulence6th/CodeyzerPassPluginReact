@@ -1,8 +1,9 @@
 import AygitYonetici from "./AygitYonetici";
-import PlatformTipi from "./PlatformTipi";
+import PlatformTipi from "../ortak/PlatformTipi";
+import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
 
 class WebUygulamaAygitYonetici extends AygitYonetici {
-
+    
     override async depoyaKoy(anahtar: string, deger: string): Promise<void> {
         localStorage[anahtar] = deger;
     }
@@ -39,6 +40,25 @@ class WebUygulamaAygitYonetici extends AygitYonetici {
 
     override sekmeAc(sekme: string) {
         window.open('?app=' + sekme, '_blank')
+    }
+
+    override async otomatikDoldurBilgi(): Promise<{ etkin: boolean, destek: boolean }> {
+        return {
+            etkin: false,
+            destek: false
+        }
+    }
+
+    override async otomatikDoldurEtkinlestir(): Promise<void> {
+        
+    }
+
+    override async sifreListesiGuncelle(): Promise<void> {
+        
+    }
+
+    override async androidPaketGetir(): Promise<AndroidPaketSecenek[]> {
+        return [];
     }
 }
 

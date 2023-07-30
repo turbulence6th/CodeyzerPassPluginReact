@@ -122,6 +122,7 @@ export default {
     "anaEkranAyarlar.otomatikDoldur.etkin": "Autofil is active",
     "anaEkranAyarlar.otomatikDoldur.etkinlestir": "Activate autofill",
     "anaEkranAyarlar.otomatikDoldur.desteklenmiyor": "Autofill is not supported",
+    "anaEkranAyarlar.otomatikDoldur.gelismisAyarlar.label": "Advanced settings",
     "anaEkranAyarlar.cikisYap.label": "Logout", 
 
     // Popup Şifre Yönetici Panel
@@ -143,7 +144,7 @@ export default {
     "autoCompleteSifrePanel.sifreBulunamadi.sutun": "Password is not found",
 
     // Content Script
-    "contentScript.yeniSifreBulundu": "New password has been found.<br>Press plugin icon to save.",
+    "contentScript.yeniSifreBulundu": "New password has been found. Press plugin icon to save.",
 
     // Gelişmiş Ayarlar Ana Panel
     "gelismisAyarlarAnaPanel.hosgeldiniz.title": "Welcome to Codeyzer Pass",

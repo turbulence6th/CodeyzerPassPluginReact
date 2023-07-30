@@ -1,6 +1,6 @@
 body {
     background-color: black;
-    padding: 15px;
+    padding: 0px;
 }
 
 input ~ label {
@@ -17,4 +17,16 @@ li.p-unselectable-text {
 
 .hata {
     color: var(--red-500);
+}
+
+.p-dropdown-panel {
+    max-width: 80vw !important;
+}
+
+.p-dropdown-item {
+    text-overflow: ellipsis !important;
+}
+
+.p-dialog {
+    max-width: 90vw !important;
 }

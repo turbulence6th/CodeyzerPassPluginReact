@@ -8,35 +8,35 @@ import * as HariciSifreApi from '../ortak/HariciSifreApi';
 import { useSelector } from "react-redux";
 import { hashle, sifrele } from "../ortak/CryptoUtil";
 import { kullaniciBelirle, mesajBelirle, sifirla, sifreGuncelDurumBelirle } from "../ortak/CodeyzerReducer";
-import { confirmDialog } from "primereact/confirmdialog";
 import { InputSwitch } from 'primereact/inputswitch';
 import { MesajTipi } from "../ortak/BildirimMesaji";
 import { useTranslation } from "react-i18next";
+import PlatformTipi from "../ortak/PlatformTipi";
+import { dialogGoster } from "../ortak/DialogUtil";
 
 const AnaEkranAyarlar = () => {
 
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
-    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreDesifreListesi);
+    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const [yeniAnaSifre, yeniAnaSifreDegistir] = useState<string>();
     const [sifreGoster, sifreGosterDegistir] = useState<boolean>(false);
-    const [otomatikDoldurBilgi, otomatikDoldurBilgiDegistir] = useState<ReturnType<typeof otomatikDoldurBilgiGuncelle>>();
+    const [otomatikDoldurBilgi, otomatikDoldurBilgiDegistir] = useState<{etkin: boolean, destek: boolean}>();
     const dispatch = useAppDispatch();
     const { validator, handleSubmit, forceUpdate } = useValidator({messagesShown: false});
     const { t } = useTranslation();
     const aygitYonetici = AygitYoneticiKullan();
 
     useEffect(() => {
-        otomatikDoldurBilgiDegistir(otomatikDoldurBilgiGuncelle());
-    }, []);
+        otomatikDoldurBilgiGuncelle();
+    }, [aygitYonetici]);
+
+    const otomatikDoldurBilgiGuncelle = async () => {
+       otomatikDoldurBilgiDegistir(await aygitYonetici?.otomatikDoldurBilgi());
+    }
 
     const sifreDegistirTiklandi = () => {
-        confirmDialog({
-            message: 'Ana şifrenizi değiştirmek istediğinize emin misiniz?',
-            header: 'Uyarı',
-            icon: 'pi pi-exclamation-triangle',
-            acceptLabel: 'Onayla',
-            rejectLabel: 'iptal',
-            accept: async () => {
+        dialogGoster(t, t('codeyzer.genel.uyari'), t('anaEkranAyarlar.sifreYenile.click'),
+            async () => {
                 if (!validator.allValid()) {
                     validator.showMessages();
                     forceUpdate();
@@ -69,22 +69,20 @@ const AnaEkranAyarlar = () => {
                     }));
                 }
             }
-        });
+        );
     };
 
     const cikisYapTiklandi = () => {
         dispatch(sifirla());
     };
 
-    const otomatikDoldurBilgiGuncelle = () => {
-        return {
-            etkin: true,
-            destek: true
-        };
-    };
-
     const gelismisAyarlarTiklandi = () => {
         aygitYonetici?.sekmeAc('GelismisAyarlar');
+    }
+
+    const otomatikDoldurEtkinlestir = async () => {
+        await aygitYonetici?.otomatikDoldurEtkinlestir();
+        otomatikDoldurBilgiGuncelle();
     }
 
     return (
@@ -129,20 +127,24 @@ const AnaEkranAyarlar = () => {
                     {t('anaEkranAyarlar.sifreSor.label')} <InputSwitch id='sifreSor' checked={true} onChange={(e) => {}} />
                 </div>
                 }
-                <div className="field">
+                {
+                aygitYonetici?.platformTipi() !== PlatformTipi.ANDROID && <div className="field">
                     <Button
                         type='button' 
-                        label={'Gelişmiş Ayarlar'} 
+                        label={t('anaEkranAyarlar.otomatikDoldur.gelismisAyarlar.label')} 
                         className='w-full' 
                         onClick={gelismisAyarlarTiklandi} 
                     />
                 </div>
+                }
                 <div className="field">
                     <Button 
+                        type='button'
                         label={otomatikDoldurBilgi?.etkin ? t('anaEkranAyarlar.otomatikDoldur.etkin') : otomatikDoldurBilgi?.destek ? t('anaEkranAyarlar.otomatikDoldur.etkinlestir') : t('anaEkranAyarlar.otomatikDoldur.desteklenmiyor')} 
                         severity="warning" 
                         className='w-full' 
                         disabled={otomatikDoldurBilgi?.etkin || !otomatikDoldurBilgi?.destek} 
+                        onClick={otomatikDoldurEtkinlestir}
                     />
                 </div>
                 <div className="field">

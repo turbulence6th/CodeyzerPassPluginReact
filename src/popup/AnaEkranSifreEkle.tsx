@@ -4,13 +4,16 @@ import { guncelle, kaydet } from "../ortak/HariciSifreApi";
 import { HariciSifreDesifre, HariciSifreIcerik } from "../ortak/HariciSifreDTO";
 import { InputText } from 'primereact/inputtext';
 import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "..";
+import { AygitYoneticiKullan, RootState, useAppDispatch } from "..";
 import { Button } from "primereact/button";
 import { aktifAnaEkranTabBelirle, seciliHariciSifreKimlikBelirle, sifreGuncelDurumBelirle } from "../ortak/CodeyzerReducer";
 import AnaEkranTabEnum from "./AnaEkranTabEnum";
 import { useValidator } from "@validator.tool/hook";
 import { classNames } from "primereact/utils";
 import { useTranslation } from "react-i18next";
+import { Dropdown } from "primereact/dropdown";
+import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
+import PlatformTipi from "../ortak/PlatformTipi";
 
 const VARSAYILAN_HARICI_SIFRE: HariciSifreIcerik = {
     platform: '',
@@ -23,10 +26,12 @@ const AnaEkranSifreEkle = () => {
     
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
     const seciliHariciSifreKimlik = useSelector((state: RootState) => state.codeyzerHafizaReducer.seciliHariciSifreKimlik);
-    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreDesifreListesi);
+    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const [hariciSifreIcerik, hariciSifreIcerikDegistir] = useState<HariciSifreIcerik>(VARSAYILAN_HARICI_SIFRE);
     const [sifreGoster, sifreGosterDegistir] = useState<boolean>(false);
     const { validator, handleSubmit, forceUpdate } = useValidator({messagesShown: false});
+    const aygitYonetici = AygitYoneticiKullan();
+    const [androidPaketSecenekleri, androidPaketSecenekleriDegistir] = useState<AndroidPaketSecenek[]>([]);
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
 
@@ -37,7 +42,14 @@ const AnaEkranSifreEkle = () => {
                 ...seciliHariciSifreDesifre.icerik
             })
         }
-    }, [seciliHariciSifreKimlik, hariciSifreDesifreListesi])
+    }, [seciliHariciSifreKimlik, hariciSifreDesifreListesi]);
+
+    useEffect(() => {
+        aygitYonetici?.androidPaketGetir()
+        .then(androidPaketList => {
+            androidPaketSecenekleriDegistir(androidPaketList);
+        });
+    }, [aygitYonetici]);
 
     const platformDegistir = (platform: string) => {
         hariciSifreIcerikDegistir({
@@ -99,6 +111,10 @@ const AnaEkranSifreEkle = () => {
         forceUpdate();
     };
 
+    const androidPaketSecenekleriGetir = () => {
+        return aygitYonetici?.androidPaketGetir();
+    };
+
     return (
         <div>
             <form 
@@ -150,6 +166,19 @@ const AnaEkranSifreEkle = () => {
                     }
                     </small>
                 </div>
+                {
+                aygitYonetici?.platformTipi() === PlatformTipi.ANDROID && <div className="field h-4rem">
+                    <Dropdown 
+                        value={androidPaketSecenekleri.some(androidPaketSecenek => androidPaketSecenek.value === hariciSifreIcerik.androidPaket) ? hariciSifreIcerik.androidPaket : undefined} 
+                        onChange={(e) => androidPaketDegistir(e.value)} 
+                        options={androidPaketSecenekleri} 
+                        placeholder={'Android paket seçiniz'}
+                        className="w-full" 
+                        filter
+                        filterInputAutoFocus={false}
+                    />
+                </div>
+                }
                 <div className="field h-4rem">
                     <span className="p-float-label">
                         <InputText 

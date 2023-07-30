@@ -16,7 +16,7 @@ import { dialogGoster } from '../ortak/DialogUtil';
 const AnaEkranSifreler = () => {
 
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici);
-    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreDesifreListesi);
+    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const aygitYonetici = AygitYoneticiKullan();
     const [seciliCihaz, seciliCihazDegistir] = useState<string>();
     const [seciliPlatform, seciliPlatformDegistir] = useState<string>();
@@ -36,7 +36,12 @@ const AnaEkranSifreler = () => {
         (async () => {
             const aygitPlatform = await aygitYonetici?.platformGetir();
             if (aygitPlatform?.platform) {
-                seciliPlatformDegistir(alanAdiGetir(aygitPlatform.platform));
+                const sekmedekiPlatform = alanAdiGetir(aygitPlatform.platform);
+                const platformHarisiSifreDesifre = hariciSifreDesifreListesi.find(hsd => alanAdiGetir(hsd.icerik.platform) === sekmedekiPlatform);
+                if (platformHarisiSifreDesifre) {
+                    seciliPlatformDegistir(sekmedekiPlatform);
+                    seciliHariciSifreKimlikDegistir(platformHarisiSifreDesifre.kimlik);
+                }
             }
         })();
     }, [aygitYonetici]);
@@ -120,7 +125,7 @@ const AnaEkranSifreler = () => {
     };
 
     const silTiklandi = () => {
-        dialogGoster(t, 'codeyzer.genel.uyari', 'anaEkranSifreler.sil.click', 
+        dialogGoster(t, t('codeyzer.genel.uyari'), t('anaEkranSifreler.sil.click'), 
             async () => {
                 const cevap = await HariciSifreApi.sil({
                     kimlik: seciliHariciSifreKimlik!,
@@ -165,8 +170,8 @@ const AnaEkranSifreler = () => {
                     options={platformSecenekleriGetir()} 
                     placeholder={t('anaEkranSifreler.platformSelect.seciniz')}
                     className="w-full" 
-                    scrollHeight='17rem'
                     filter
+                    filterInputAutoFocus={false}
                     showClear
                 />
             </div>
@@ -235,7 +240,7 @@ const AnaEkranSifreler = () => {
                     />
                 </div>
             </div>
-            <div className="flex justify-content-end flex-wrap card-container green-container">
+            <div className="flex justify-content-end">
                 <div className="formgrid grid">
                     {
                     // TODO introjs eklenecek

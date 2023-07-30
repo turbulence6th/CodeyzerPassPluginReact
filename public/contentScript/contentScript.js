@@ -41,7 +41,7 @@
                     kullaniciAdi: kullaniciAdi,
                     sifre: sifre
                 }, function() {
-
+                    
                 }
             })
         }
@@ -102,24 +102,22 @@
     }
 
     function beniAciGoster() {
-        let div = document.createElement('div');
-        div.classList.add('codeyzer-beniac');
+        
+        // let iframe = /** @type {HTMLIFrameElement} */ (document.createElement('iframe'));
+        // iframe.classList.add('codeyzer-beniac');
+        // iframe.src = chrome.runtime.getURL('/index.html?app=SifreBulundu');
+        // iframe.id = 'codeyzer-sifre-bulundu';
+        // document.body.append(iframe);
+// 
+        // sifreEklePanel.$codeyzerKapat.addEventListener('click', () => {
+        //     div.remove();
+        //     // @ts-ignore
+        //     chrome.storage.local.set({login: null}, function() {
+// 
+        //     });
+        // });
+        
 
-        let shadow = div.attachShadow({mode: 'open'});
-        let sifreEklePanel = new SifreEklePanel();
-        shadow.append(sifreEklePanel);
-
-        document.body.append(div);
-
-        $(div).draggable();
-
-        sifreEklePanel.$codeyzerKapat.addEventListener('click', () => {
-            div.remove();
-            // @ts-ignore
-            chrome.storage.local.set({login: null}, function() {
-
-            });
-        });
     }
 
     /**
