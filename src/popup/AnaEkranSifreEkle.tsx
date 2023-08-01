@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { sifrele } from "../ortak/CryptoUtil";
 import { guncelle, kaydet } from "../ortak/HariciSifreApi";
-import { HariciSifreDesifre, HariciSifreIcerik } from "../ortak/HariciSifreDTO";
+import { HariciSifreIcerik } from "../ortak/HariciSifreDTO";
 import { InputText } from 'primereact/inputtext';
 import { useSelector } from "react-redux";
 import { AygitYoneticiKullan, RootState, useAppDispatch } from "..";
@@ -50,6 +50,19 @@ const AnaEkranSifreEkle = () => {
         .then(androidPaketList => {
             androidPaketSecenekleriDegistir(androidPaketList);
         });
+
+        aygitYonetici?.depodanGetir('login').then(loginJson => {
+            if (loginJson) {
+                const login: {platform: string, kullaniciAdi: string, sifre: string} = JSON.parse(loginJson);
+                hariciSifreIcerikDegistir({
+                    ...hariciSifreIcerik,
+                    platform: login.platform,
+                    kullaniciAdi: login.kullaniciAdi,
+                    sifre: login.sifre
+                });
+                aygitYonetici.depodanSil('login');
+            } 
+        })
     }, [aygitYonetici]);
 
     const platformDegistir = (platform: string) => {
@@ -110,10 +123,6 @@ const AnaEkranSifreEkle = () => {
         hariciSifreIcerikDegistir(VARSAYILAN_HARICI_SIFRE);
         validator.hideMessages();
         forceUpdate();
-    };
-
-    const androidPaketSecenekleriGetir = () => {
-        return aygitYonetici?.androidPaketGetir();
     };
 
     return (

@@ -219,18 +219,21 @@ const AnaEkranSifreler = () => {
                 </Yukleniyor>
             </div>
             { 
-            aygitYonetici?.platformTipi() === PlatformTipi.CHROME && <div className="field">
-                <Button 
-                    label={t('anaEkranSifreler.doldur.label')}
-                    className='w-full' 
-                    onClick={doldurTiklandi} 
-                    disabled={!seciliHariciSifreKimlik}
-                />
+            aygitYonetici?.platformTipi() === PlatformTipi.CHROME && 
+            <div className="field">
+                <Yukleniyor tip='engelle'>
+                    <Button 
+                        label={t('anaEkranSifreler.doldur.label')}
+                        className='w-full' 
+                        onClick={doldurTiklandi} 
+                        disabled={!seciliHariciSifreKimlik}
+                    />
+                </Yukleniyor>
             </div>
             }
             <div className="formgrid grid">
                 <div className="field col">
-                    <Yukleniyor height='2.8rem' tip='engelle'>
+                    <Yukleniyor tip='engelle'>
                         <Button 
                             label={t('anaEkranSifreler.guncelle.label')}
                             className='w-full h-full' 
@@ -240,7 +243,7 @@ const AnaEkranSifreler = () => {
                     </Yukleniyor>
                 </div>
                 <div className="field col">
-                    <Yukleniyor height='2.8rem' tip='engelle'>
+                    <Yukleniyor tip='engelle'>
                         <Button 
                             label={t('anaEkranSifreler.sil.label')}
                             className='w-full h-full' 
@@ -265,7 +268,7 @@ const AnaEkranSifreler = () => {
                     </div>
                     }
                     <div className="col">
-                        <Yukleniyor height='2.7rem' width='2.7rem' tip='engelle'>
+                        <Yukleniyor tip='engelle'>
                             <Button 
                                 icon="pi pi-refresh"
                                 onClick={yenileTiklandi}

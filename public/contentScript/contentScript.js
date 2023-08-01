@@ -8,20 +8,13 @@
         if (request.mesajTipi === "doldur") {
             doldur(request.kullaniciAdi.deger, request.sifre.deger);
             doldurAlanlar = [request.kullaniciAdi.deger, request.sifre.deger];
-        } else if (request.mesajTipi === "login") {
-            sendResponse(sonLogin);
-            // @ts-ignore
-            chrome.storage.local.set({login: null}, function() {
-
-            });
         }
     });
 
     // @ts-ignore
     chrome.storage.local.get(['login'], function(result) {
         if (result.login) {
-            beniAciGoster();
-            sonLogin = result.login;
+            sonLogin = JSON.parse(result.login);
         }
     });
 
@@ -36,11 +29,11 @@
         if (kullaniciAdi && sifre && (kullaniciAdi !== doldurAlanlar[0] || sifre !== doldurAlanlar[1])) {
             // @ts-ignore
             chrome.storage.local.set({
-                login: {
+                login: JSON.stringify({
                     platform: platformGetir(),
                     kullaniciAdi: kullaniciAdi,
                     sifre: sifre
-                }, function() {
+                }), function() {
                     
                 }
             })
