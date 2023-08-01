@@ -12,6 +12,7 @@ import { MesajTipi } from '../ortak/BildirimMesaji';
 import { useTranslation } from 'react-i18next';
 import PlatformTipi from '../ortak/PlatformTipi';
 import { dialogGoster } from '../ortak/DialogUtil';
+import Yukleniyor from '../ortak/Yukleniyor';
 
 const AnaEkranSifreler = () => {
 
@@ -45,11 +46,6 @@ const AnaEkranSifreler = () => {
             }
         })();
     }, [aygitYonetici]);
-
-    useEffect(() => {
-        seciliPlatformDegistir(undefined);
-        seciliHariciSifreKimlikDegistir(undefined);
-    }, [hariciSifreDesifreListesi]);
 
     const platformSecenekleriGetir = () => {
         let alanAdiSet;
@@ -154,61 +150,73 @@ const AnaEkranSifreler = () => {
 
     return (
         <div>
-            <div className="field">
-                <Dropdown 
-                    value={seciliCihaz}
-                    onChange={(e) => cihazDegisti(e.value)} 
-                    options={[{label: 'Web', value: 'web'}, {label: 'Android', value: 'android'}]} 
-                    placeholder="Cihaz seçiniz" 
-                    className="w-full" 
-                />
+           <div className="field">
+                <Yukleniyor height='3.3rem' tip='iskelet'>
+                    <Dropdown 
+                        value={seciliCihaz}
+                        onChange={(e) => cihazDegisti(e.value)} 
+                        options={[{label: 'Web', value: 'web'}, {label: 'Android', value: 'android'}]} 
+                        placeholder="Cihaz seçiniz" 
+                        className="w-full h-full" 
+                        showClear
+                    />
+                </Yukleniyor>
             </div>
             <div className="field">
-                <Dropdown 
-                    value={seciliPlatform} 
-                    onChange={(e) => platformDegisti(e.value)} 
-                    options={platformSecenekleriGetir()} 
-                    placeholder={t('anaEkranSifreler.platformSelect.seciniz')}
-                    className="w-full" 
-                    filter
-                    filterInputAutoFocus={false}
-                    showClear
-                />
+                <Yukleniyor height='3.3rem' tip='iskelet'>
+                    <Dropdown 
+                        value={seciliPlatform} 
+                        onChange={(e) => platformDegisti(e.value)} 
+                        options={platformSecenekleriGetir()} 
+                        placeholder={t('anaEkranSifreler.platformSelect.seciniz')}
+                        className="w-full h-full" 
+                        filter
+                        filterInputAutoFocus={false}
+                        disabled={!seciliCihaz}
+                        showClear
+                    />
+                </Yukleniyor>
             </div>
             <div className="field">
-                <Dropdown 
-                    value={seciliHariciSifre?.icerik.kullaniciAdi} 
-                    onChange={(e) => kullanciAdiDegisti(e.value)} 
-                    options={kullaniciAdiSecenekleriGetir()} 
-                    placeholder={t('anaEkranSifreler.sifreSelect.bos')} 
-                    className="w-full" 
-                    disabled={!seciliPlatform}
-                    showClear
-                />
+                <Yukleniyor height='3.4rem' tip='iskelet'>
+                    <Dropdown 
+                        value={seciliHariciSifre?.icerik.kullaniciAdi} 
+                        onChange={(e) => kullanciAdiDegisti(e.value)} 
+                        options={kullaniciAdiSecenekleriGetir()} 
+                        placeholder={t('anaEkranSifreler.sifreSelect.bos')} 
+                        className="w-full h-full" 
+                        disabled={!seciliPlatform}
+                        showClear
+                    />
+                </Yukleniyor>
             </div>
-            <div className="field p-inputgroup">
-                <InputText 
-                    id="sifre" 
-                    type={sifreGoster ? 'text' : 'password'} 
-                    value={seciliHariciSifre?.icerik.sifre || ''} 
-                    className='w-full' 
-                    placeholder={t('anaEkranSifreler.sifreSelectSifre.bos')}
-                    disabled
-                />
-                <Button 
-                    icon={"pi pi-clone"} 
-                    className="p-button-success" 
-                    onClick={kopyalaTiklandi} 
-                    disabled={!seciliHariciSifreKimlik}
-                    title={t('anaEkranSifreler.kopyala.title')}
-                />
-                <Button 
-                    icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} 
-                    className="p-button-success" 
-                    onClick={() => sifreGosterDegistir(!sifreGoster)} 
-                    disabled={!seciliHariciSifreKimlik}
-                    title={t('anaEkranSifreler.sifreSelectGoster.title')}
-                />
+            <div className="field">
+                <Yukleniyor height='3.4rem' tip='iskelet'>
+                    <div className='p-inputgroup h-full'>
+                        <InputText 
+                            id="sifre" 
+                            type={sifreGoster ? 'text' : 'password'} 
+                            value={seciliHariciSifre?.icerik.sifre || ''} 
+                            className='w-full' 
+                            placeholder={t('anaEkranSifreler.sifreSelectSifre.bos')}
+                            disabled
+                        />
+                        <Button 
+                            icon={"pi pi-clone"} 
+                            className="p-button-success" 
+                            onClick={kopyalaTiklandi} 
+                            disabled={!seciliHariciSifreKimlik}
+                            title={t('anaEkranSifreler.kopyala.title')}
+                        />
+                        <Button 
+                            icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} 
+                            className="p-button-success" 
+                            onClick={() => sifreGosterDegistir(!sifreGoster)} 
+                            disabled={!seciliHariciSifreKimlik}
+                            title={t('anaEkranSifreler.sifreSelectGoster.title')}
+                        />
+                    </div>
+                </Yukleniyor>
             </div>
             { 
             aygitYonetici?.platformTipi() === PlatformTipi.CHROME && <div className="field">
@@ -222,26 +230,30 @@ const AnaEkranSifreler = () => {
             }
             <div className="formgrid grid">
                 <div className="field col">
-                    <Button 
-                        label={t('anaEkranSifreler.guncelle.label')}
-                        className='w-full' 
-                        onClick={() => guncelleTiklandi(seciliHariciSifreKimlik!)}
-                        disabled={!seciliHariciSifreKimlik}
-                    />
+                    <Yukleniyor height='2.8rem' tip='engelle'>
+                        <Button 
+                            label={t('anaEkranSifreler.guncelle.label')}
+                            className='w-full h-full' 
+                            onClick={() => guncelleTiklandi(seciliHariciSifreKimlik!)}
+                            disabled={!seciliHariciSifreKimlik}
+                        />
+                    </Yukleniyor>
                 </div>
                 <div className="field col">
-                    <Button 
-                        label={t('anaEkranSifreler.sil.label')}
-                        className='w-full' 
-                        onClick={silTiklandi} 
-                        severity="danger" 
-                        outlined
-                        disabled={!seciliHariciSifreKimlik}
-                    />
+                    <Yukleniyor height='2.8rem' tip='engelle'>
+                        <Button 
+                            label={t('anaEkranSifreler.sil.label')}
+                            className='w-full h-full' 
+                            onClick={silTiklandi} 
+                            severity="danger" 
+                            outlined
+                            disabled={!seciliHariciSifreKimlik}
+                        />
+                    </Yukleniyor>
                 </div>
             </div>
             <div className="flex justify-content-end">
-                <div className="formgrid grid">
+                <div className="grid">
                     {
                     // TODO introjs eklenecek
                     false && <div className="field col">
@@ -252,13 +264,16 @@ const AnaEkranSifreler = () => {
                         />
                     </div>
                     }
-                    <div className="field col">
-                        <Button 
-                            icon="pi pi-refresh"
-                            onClick={yenileTiklandi}
-                            severity="secondary"
-                            title={t('anaEkranSifreler.yenile.title')}
-                        />
+                    <div className="col">
+                        <Yukleniyor height='2.7rem' width='2.7rem' tip='engelle'>
+                            <Button 
+                                icon="pi pi-refresh"
+                                onClick={yenileTiklandi}
+                                severity="secondary"
+                                title={t('anaEkranSifreler.yenile.title')}
+                                className='h-full'
+                            />
+                        </Yukleniyor>
                     </div>
                 </div>
             </div>

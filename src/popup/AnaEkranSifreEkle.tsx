@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { Dropdown } from "primereact/dropdown";
 import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
 import PlatformTipi from "../ortak/PlatformTipi";
+import Yukleniyor from "../ortak/Yukleniyor";
 
 const VARSAYILAN_HARICI_SIFRE: HariciSifreIcerik = {
     platform: '',
@@ -121,112 +122,126 @@ const AnaEkranSifreEkle = () => {
                 onSubmit={handleSubmit(sifreEkleGuncelle)}
             >
                 <div className="field h-4rem">
-                    <span className="p-float-label">
-                        <InputText 
-                            id="platform" 
-                            value={hariciSifreIcerik.platform} 
-                            onChange={(e) => platformDegistir(e.target.value)} 
-                            className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('platform')})} 
-                            inputMode='url'
-                            aria-describedby="platform-mesaj"
-                        />
-                        <label htmlFor="platform">{t('anaEkranSifreEkle.platform.label')}</label>
-                    </span>
-                    <div id="platform-mesaj" className='hata text-xs pl-2'>
-                    {
-                        validator.message('platform', hariciSifreIcerik.platform, {
-                            validate: (val: string) => !val ? 
-                                t('anaEkranSifreEkle.platform.hata.gerekli') : ''
-                        }) 
-                        ||
-                        validator.message('platform', hariciSifreIcerik.platform, {
-                            validate: (val: string) => val && !/^(\w+\.)*(\w+\.\w+)\/.*$/.test(val) ? 
-                                t('anaEkranSifreEkle.platform.hata.regex') : ''
-                        }) 
-                    }
-                    </div>
+                    <Yukleniyor tip="engelle">
+                        <span className="p-float-label">
+                            <InputText 
+                                id="platform" 
+                                value={hariciSifreIcerik.platform} 
+                                onChange={(e) => platformDegistir(e.target.value)} 
+                                className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('platform')})} 
+                                inputMode='url'
+                                aria-describedby="platform-mesaj"
+                            />
+                            <label htmlFor="platform">{t('anaEkranSifreEkle.platform.label')}</label>
+                        </span>
+                        <div id="platform-mesaj" className='hata text-xs pl-2'>
+                        {
+                            validator.message('platform', hariciSifreIcerik.platform, {
+                                validate: (val: string) => !val ? 
+                                    t('anaEkranSifreEkle.platform.hata.gerekli') : ''
+                            }) 
+                            ||
+                            validator.message('platform', hariciSifreIcerik.platform, {
+                                validate: (val: string) => val && !/^(\w+\.)*(\w+\.\w+)\/.*$/.test(val) ? 
+                                    t('anaEkranSifreEkle.platform.hata.regex') : ''
+                            }) 
+                        }
+                        </div>
+                    </Yukleniyor>
                 </div>
                 <div className="field h-4rem">
-                    <span className="p-float-label">
-                        <InputText 
-                            id="androidPaket" 
-                            value={hariciSifreIcerik.androidPaket} 
-                            onChange={(e) => androidPaketDegistir(e.target.value)} 
-                            className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('androidPaket')})} 
-                            aria-describedby="android-paket-mesaj"
-                        />
-                        <label htmlFor="androidPaket">{t('anaEkranSifreEkle.androidPaket.placeholder')}</label>
-                    </span>
-                    <small id="android-paket-mesaj" className='hata'>
-                    {
-                        validator.message('androidPaket', hariciSifreIcerik.androidPaket, {
-                            validate: (val: string) => val && !/^(\w+\.)*\w+$/.test(val) ? 
-                                "Android paket formatı android.paket.adi formatında olmalıdır" : ''
-                        }) 
-                    }
-                    </small>
+                    <Yukleniyor tip="engelle">
+                        <span className="p-float-label">
+                            <InputText 
+                                id="androidPaket" 
+                                value={hariciSifreIcerik.androidPaket} 
+                                onChange={(e) => androidPaketDegistir(e.target.value)} 
+                                className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('androidPaket')})} 
+                                aria-describedby="android-paket-mesaj"
+                            />
+                            <label htmlFor="androidPaket">{t('anaEkranSifreEkle.androidPaket.placeholder')}</label>
+                        </span>
+                        <small id="android-paket-mesaj" className='hata'>
+                        {
+                            validator.message('androidPaket', hariciSifreIcerik.androidPaket, {
+                                validate: (val: string) => val && !/^(\w+\.)*\w+$/.test(val) ? 
+                                    "Android paket formatı android.paket.adi formatında olmalıdır" : ''
+                            }) 
+                        }
+                        </small>
+                    </Yukleniyor>
                 </div>
                 {
                 aygitYonetici?.platformTipi() === PlatformTipi.ANDROID && <div className="field h-4rem">
-                    <Dropdown 
-                        value={androidPaketSecenekleri.some(androidPaketSecenek => androidPaketSecenek.value === hariciSifreIcerik.androidPaket) ? hariciSifreIcerik.androidPaket : undefined} 
-                        onChange={(e) => androidPaketDegistir(e.value)} 
-                        options={androidPaketSecenekleri} 
-                        placeholder={'Android paket seçiniz'}
-                        className="w-full" 
-                        filter
-                        filterInputAutoFocus={false}
-                    />
+                    <Yukleniyor tip="engelle">
+                        <Dropdown 
+                            value={androidPaketSecenekleri.some(androidPaketSecenek => androidPaketSecenek.value === hariciSifreIcerik.androidPaket) ? hariciSifreIcerik.androidPaket : undefined} 
+                            onChange={(e) => androidPaketDegistir(e.value)} 
+                            options={androidPaketSecenekleri} 
+                            placeholder={'Android paket seçiniz'}
+                            className="w-full" 
+                            filter
+                            filterInputAutoFocus={false}
+                        />
+                    </Yukleniyor>
                 </div>
                 }
                 <div className="field h-4rem">
-                    <span className="p-float-label">
-                        <InputText 
-                            id="kullaniciAdi" 
-                            value={hariciSifreIcerik.kullaniciAdi} 
-                            onChange={(e) => kullaniciAdiDegistir(e.target.value)} 
-                            className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('kullaniciAdi')})} 
-                            inputMode='email'
-                            aria-describedby="kullanici-adi-mesaj"
-                        />
-                        <label htmlFor="kullaniciAdi">{t('anaEkranSifreEkle.kullaniciAdi.label')}</label>
-                    </span>
-                    <small id="kullanici-adi-mesaj" className='hata'>
-                    {
-                        validator.message('kullaniciAdi', hariciSifreIcerik.kullaniciAdi, {
-                            validate: (val: string) => !val ? t('anaEkranSifreEkle.kullaniciAdi.hata.gerekli') : ''
-                        }) 
-                    }
-                    </small>
-                </div>
-                <div className="field h-4rem">
-                    <div className="p-inputgroup">
+                    <Yukleniyor tip="engelle">
                         <span className="p-float-label">
                             <InputText 
-                                id="sifre" 
-                                type={sifreGoster ? 'text' : 'password'} 
-                                value={hariciSifreIcerik.sifre} 
-                                onChange={(e) => sifreDegistir(e.target.value)} 
-                                className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('sifre')})} 
-                                aria-describedby="sifre-mesaj"
+                                id="kullaniciAdi" 
+                                value={hariciSifreIcerik.kullaniciAdi} 
+                                onChange={(e) => kullaniciAdiDegistir(e.target.value)} 
+                                className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('kullaniciAdi')})} 
+                                inputMode='email'
+                                aria-describedby="kullanici-adi-mesaj"
                             />
-                            <label htmlFor="sifre">{t('anaEkranSifreEkle.sifre.label')}</label>
+                            <label htmlFor="kullaniciAdi">{t('anaEkranSifreEkle.kullaniciAdi.label')}</label>
                         </span>
-                        <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
-                    </div>
-                    <small id="sifre-mesaj" className='hata'>
-                    {
-                        validator.message('sifre', hariciSifreIcerik.sifre, {
-                            validate: (val: string) => !val ? t('anaEkranSifreEkle.sifre.hata.gerekli') : ''
-                        }) 
-                    }
-                    </small>
+                        <small id="kullanici-adi-mesaj" className='hata'>
+                        {
+                            validator.message('kullaniciAdi', hariciSifreIcerik.kullaniciAdi, {
+                                validate: (val: string) => !val ? t('anaEkranSifreEkle.kullaniciAdi.hata.gerekli') : ''
+                            }) 
+                        }
+                        </small>
+                    </Yukleniyor>
+                </div>
+                <div className="field h-4rem">
+                    <Yukleniyor tip="engelle">
+                        <div className="p-inputgroup">
+                            <span className="p-float-label">
+                                <InputText 
+                                    id="sifre" 
+                                    type={sifreGoster ? 'text' : 'password'} 
+                                    value={hariciSifreIcerik.sifre} 
+                                    onChange={(e) => sifreDegistir(e.target.value)} 
+                                    className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('sifre')})} 
+                                    aria-describedby="sifre-mesaj"
+                                />
+                                <label htmlFor="sifre">{t('anaEkranSifreEkle.sifre.label')}</label>
+                            </span>
+                            <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
+                        </div>
+                        <small id="sifre-mesaj" className='hata'>
+                        {
+                            validator.message('sifre', hariciSifreIcerik.sifre, {
+                                validate: (val: string) => !val ? t('anaEkranSifreEkle.sifre.hata.gerekli') : ''
+                            }) 
+                        }
+                        </small>
+                    </Yukleniyor>
                 </div>
                 <div className="field">
-                    <Button type="button" label={seciliHariciSifreKimlik ? t('anaEkranSifreEkle.sifreEkle.guncelle.label') : t('anaEkranSifreEkle.sifreEkle.ekle.label')} className='w-full' onClick={sifreEkleGuncelle} />
+                    <Yukleniyor tip="engelle">
+                        <Button type="button" label={seciliHariciSifreKimlik ? t('anaEkranSifreEkle.sifreEkle.guncelle.label') : t('anaEkranSifreEkle.sifreEkle.ekle.label')} className='w-full' onClick={sifreEkleGuncelle} />
+                    </Yukleniyor>
                 </div>
                 <div className="field">
-                    <Button type="button" label={t('anaEkranSifreEkle.sifirla.label')} className='w-full' onClick={formuSifirla} />
+                    <Yukleniyor tip="engelle">
+                        <Button type="button" label={t('anaEkranSifreEkle.sifirla.label')} className='w-full' onClick={formuSifirla} />
+                    </Yukleniyor>
                 </div>
             </form>
         </div>

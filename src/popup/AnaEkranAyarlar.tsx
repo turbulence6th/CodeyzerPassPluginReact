@@ -13,6 +13,7 @@ import { MesajTipi } from "../ortak/BildirimMesaji";
 import { useTranslation } from "react-i18next";
 import PlatformTipi from "../ortak/PlatformTipi";
 import { dialogGoster } from "../ortak/DialogUtil";
+import Yukleniyor from "../ortak/Yukleniyor";
 
 const AnaEkranAyarlar = () => {
 
@@ -92,34 +93,38 @@ const AnaEkranAyarlar = () => {
                 onSubmit={handleSubmit(sifreDegistirTiklandi)}
             >
                 <div className="field h-4rem">
+                   <Yukleniyor tip="engelle">
                     <div className='p-inputgroup'>
-                        <span className="p-float-label">
-                            <InputText 
-                                id="sifre" 
-                                type={sifreGoster ? 'text' : 'password'} 
-                                value={yeniAnaSifre} 
-                                onChange={(e) => yeniAnaSifreDegistir(e.target.value)} 
-                                className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('yeniAnaSifre')})} 
-                                aria-describedby="sifre-mesaj"
-                            />
-                            <label htmlFor="sifre">{t('anaEkranAyarlar.yeniSifre.label')}</label>
-                        </span>
-                        <Button type='button' icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
-                    </div>
-                    <small id="sifre-mesaj" className='hata'>
-                    {
-                        validator.message('yeniAnaSifre', yeniAnaSifre, {
-                            validate: (val: string) => !val ? t('anaEkranAyarlar.yeniSifre.hata.gerekli') : ''
-                        }) 
-                        ||
-                        validator.message('yeniAnaSifre', yeniAnaSifre, {
-                            validate: (val: string) => !val ? t('anaEkranAyarlar.yeniSifre.hata.gerekli') : ''
-                        }) 
-                    }
-                    </small>
+                            <span className="p-float-label">
+                                <InputText 
+                                    id="sifre" 
+                                    type={sifreGoster ? 'text' : 'password'} 
+                                    value={yeniAnaSifre} 
+                                    onChange={(e) => yeniAnaSifreDegistir(e.target.value)} 
+                                    className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('yeniAnaSifre')})} 
+                                    aria-describedby="sifre-mesaj"
+                                />
+                                <label htmlFor="sifre">{t('anaEkranAyarlar.yeniSifre.label')}</label>
+                            </span>
+                            <Button type='button' icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
+                        </div>
+                        <small id="sifre-mesaj" className='hata'>
+                        {
+                            validator.message('yeniAnaSifre', yeniAnaSifre, {
+                                validate: (val: string) => !val ? t('anaEkranAyarlar.yeniSifre.hata.gerekli') : ''
+                            }) 
+                            ||
+                            validator.message('yeniAnaSifre', yeniAnaSifre, {
+                                validate: (val: string) => !val ? t('anaEkranAyarlar.yeniSifre.hata.gerekli') : ''
+                            }) 
+                        }
+                        </small>
+                   </Yukleniyor>
                 </div>
                 <div className="field">
-                    <Button type='button' label={t('anaEkranAyarlar.sifreYenile.label')}  className='w-full' onClick={sifreDegistirTiklandi} />
+                    <Yukleniyor tip="engelle">
+                        <Button type='button' label={t('anaEkranAyarlar.sifreYenile.label')}  className='w-full' onClick={sifreDegistirTiklandi} />
+                    </Yukleniyor>
                 </div>
                 {
                 // TODO şifre sor eklenecek

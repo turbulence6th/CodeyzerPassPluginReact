@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState, AygitYoneticiKullan, useAppDispatch } from '.';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { hariciSifreDesifreListesiBelirle, hariciSifreListesiBelirle, mesajBelirle, sifreGuncelDurumBelirle } from './ortak/CodeyzerReducer';
+import { hariciSifreDesifreListesiBelirle, hariciSifreListesiBelirle, mesajBelirle, sifreGuncelDurumBelirle, yukleniyorBelirle } from './ortak/CodeyzerReducer';
 import axios from 'axios';
 import { Cevap } from './ortak/Cevap';
 import { MesajTipi } from './ortak/BildirimMesaji';
@@ -35,15 +35,22 @@ function App() {
   const sifreGuncelDurum = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifreGuncelDurum);
 
   useEffect(() => {
+    axios.interceptors.request.clear();
+    axios.interceptors.request.use(config => {
+      dispatch(yukleniyorBelirle(true));
+      return config;
+    });
     axios.interceptors.response.clear();
     axios.interceptors.response.use((response) => {
       const cevap: Cevap<any> = response.data;
       if (!cevap.basarili) {
         toast.current!.show({ severity: 'error', detail: t(cevap.mesaj), sticky:true });
       }
+      dispatch(yukleniyorBelirle(false));
       return response;
     }, error => {
       toast.current!.show({ severity: 'error', detail: 'Beklenmedik bir hata oluştu' });
+      dispatch(yukleniyorBelirle(false));
       return Promise.reject(error);
     });
 
@@ -52,8 +59,6 @@ function App() {
 
     if (app === 'GelismisAyarlar') {
       anaBilesenDegistir(lazy(() => import('./iframe/GelismisAyarlar')));
-    } else if (app === 'SifreBulundu') {
-      anaBilesenDegistir(lazy(() => import('./iframe/SifreBulundu')));
     } else {
       anaBilesenDegistir(lazy(() => import('./popup/Popup')));
     }
@@ -81,9 +86,12 @@ function App() {
   useEffect(() => {
       if (!sifreGuncelDurum && kullanici) {
         (async () => {
-          const cevap = await getir({ kullaniciKimlik: kullanici.kullaniciKimlik });
-          dispatch(hariciSifreListesiBelirle(cevap.sonuc));
-          dispatch(sifreGuncelDurumBelirle(true));
+          try {
+            const cevap = await getir({ kullaniciKimlik: kullanici.kullaniciKimlik });
+            dispatch(hariciSifreListesiBelirle(cevap.sonuc));
+          } finally {
+            dispatch(sifreGuncelDurumBelirle(true));
+          }
       })();
     }
   }, [sifreGuncelDurum, kullanici]);

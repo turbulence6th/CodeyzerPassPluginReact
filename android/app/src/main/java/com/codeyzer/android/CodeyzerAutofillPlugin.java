@@ -49,10 +49,12 @@ public class CodeyzerAutofillPlugin extends Plugin {
 
             private PluginCall call;
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public Intent createIntent(Context context, PluginCall call) {
                 this.call = call;
                 return new Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE, Uri.parse("package:com.codeyzer.android"));
+//                return new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             }
 
             @Override

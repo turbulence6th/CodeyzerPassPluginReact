@@ -13,6 +13,7 @@ enum CodeyzerActionType {
     SIFRE_GUNCEL_DURUM = 'SIFRE_GUNCEL_DURUM',
     MESAJ_BELIRLE = 'MESAJ_BELIRLE',
     ANA_SIFRE_BELIRLE = 'ANA_SIFRE_BELIRLE',
+    YUKLENIYOR_BELIRLE = 'YUKLENIYOR_BELIRLE',
     SIFIRLA = 'SIFIRLA'
 }
 
@@ -28,6 +29,7 @@ interface CodeyzerHafizaReducerState {
     sifreGuncelDurum: boolean
     mesaj?: BildirimMesaji
     anaSifre?: string
+    yukleniyor: boolean
 }
 
 const CODEYZER_DEPO_VARSAYILAN_STATE: CodeyzerDepoReducerState = {
@@ -41,7 +43,8 @@ const CODEYZER_HAFIZA_VARSAYILAN_STATE: CodeyzerHafizaReducerState = {
     aktifAnaEkranTabEnum: undefined,
     sifreGuncelDurum: true,
     mesaj: undefined,
-    anaSifre: undefined
+    anaSifre: undefined,
+    yukleniyor: false
 }
 
 const codeyzerDepoReducer = (state: CodeyzerDepoReducerState = CODEYZER_DEPO_VARSAYILAN_STATE, action: PayloadAction<any, CodeyzerActionType>) : CodeyzerDepoReducerState => {
@@ -94,6 +97,11 @@ const codeyzerHafizaReducer = (state: CodeyzerHafizaReducerState = CODEYZER_HAFI
             return {
                 ...state,
                 anaSifre: action.payload as string
+            }
+        case CodeyzerActionType.YUKLENIYOR_BELIRLE:
+            return {
+                ...state,
+                yukleniyor: action.payload as boolean
             }
         case CodeyzerActionType.SIFIRLA:
             return CODEYZER_HAFIZA_VARSAYILAN_STATE;
@@ -158,6 +166,13 @@ const anaSifreBelirle = (anaSifre: string) => {
     }
 }
 
+const yukleniyorBelirle = (yukleniyor: boolean) => {
+    return {
+        type: CodeyzerActionType.YUKLENIYOR_BELIRLE,
+        payload: yukleniyor
+    }
+}
+
 const sifirla = () => {
     return {
         type: CodeyzerActionType.SIFIRLA
@@ -175,5 +190,6 @@ export {
     sifreGuncelDurumBelirle,
     mesajBelirle,
     anaSifreBelirle,
+    yukleniyorBelirle,
     sifirla
 };

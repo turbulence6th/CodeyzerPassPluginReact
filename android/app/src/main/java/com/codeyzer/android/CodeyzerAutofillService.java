@@ -2,6 +2,7 @@ package com.codeyzer.android;
 
 import android.app.assist.AssistStructure;
 import android.app.assist.AssistStructure.ViewNode;
+import android.os.Build;
 import android.os.CancellationSignal;
 import android.service.autofill.AutofillService;
 import android.service.autofill.Dataset;
@@ -19,9 +20,10 @@ import android.view.autofill.AutofillValue;
 import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.codeyzer.android.dto.Cevap;
-import com.codeyzer.android.dto.Depo;
+import com.codeyzer.android.dto.CodeyzerDepoReducer;
 import com.codeyzer.android.dto.HariciSifreIcerik;
 import com.codeyzer.android.dto.HariciSifreKaydetDTO;
 import com.codeyzer.android.util.HttpUtil;
@@ -38,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public final class CodeyzerAutofillService extends AutofillService {
 
     private static final Set<String> TEXT_INPUT_TYPES = Collections.unmodifiableSet(new HashSet<>(
@@ -62,7 +65,7 @@ public final class CodeyzerAutofillService extends AutofillService {
         String packageName = getApplicationContext().getPackageName();
 
         Map<String, List<String>> paketMap = PrefUtil.getPaketMap(getApplicationContext());
-        Depo depo = PrefUtil.getDepo(getApplicationContext());
+        CodeyzerDepoReducer depo = PrefUtil.getCodeyzerDepoReducer(getApplicationContext());
 
         String filledPackageName = structure.getActivityComponent().getPackageName();
         List<String> sifreListesi = paketMap.get(filledPackageName);
@@ -72,7 +75,7 @@ public final class CodeyzerAutofillService extends AutofillService {
         }
 
         List<HariciSifreIcerik> icerikListesi = sifreListesi.stream()
-                .map(x -> KriptoUtil.desifreEt(x, depo.getSifre()))
+                .map(x -> KriptoUtil.desifreEt(x, depo.getKullanici().getSifre()))
                 .collect(Collectors.toList());
 
         for (HariciSifreIcerik icerik : icerikListesi) {
@@ -116,7 +119,7 @@ public final class CodeyzerAutofillService extends AutofillService {
 
         if (username != null && password != null) {
 
-            Depo depo = PrefUtil.getDepo(getApplicationContext());
+            CodeyzerDepoReducer codeyzerDepoReducer = PrefUtil.getCodeyzerDepoReducer(getApplicationContext());
             String androidPlatform = structure.getActivityComponent().getPackageName();
 
             HariciSifreIcerik hariciSifreIcerik = new HariciSifreIcerik();
@@ -125,8 +128,8 @@ public final class CodeyzerAutofillService extends AutofillService {
             hariciSifreIcerik.setSifre(password);
 
             HariciSifreKaydetDTO hariciSifreKaydetDTO = new HariciSifreKaydetDTO();
-            hariciSifreKaydetDTO.setIcerik(KriptoUtil.sifrele(hariciSifreIcerik, ""));
-            hariciSifreKaydetDTO.setKullaniciKimlik(depo.getKullaniciKimlik());
+            hariciSifreKaydetDTO.setIcerik(KriptoUtil.sifrele(hariciSifreIcerik, codeyzerDepoReducer.getKullanici().getSifre()));
+            hariciSifreKaydetDTO.setKullaniciKimlik(codeyzerDepoReducer.getKullanici().getKullaniciKimlik());
 
             Cevap<Void> cevap = HttpUtil.post("/hariciSifre/kaydet", hariciSifreKaydetDTO, new TypeReference<Cevap<Void>>() {});
             if (cevap.getBasarili()) {

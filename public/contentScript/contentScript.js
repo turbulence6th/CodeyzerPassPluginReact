@@ -101,25 +101,6 @@
         input.dispatchEvent(event);
     }
 
-    function beniAciGoster() {
-        
-        // let iframe = /** @type {HTMLIFrameElement} */ (document.createElement('iframe'));
-        // iframe.classList.add('codeyzer-beniac');
-        // iframe.src = chrome.runtime.getURL('/index.html?app=SifreBulundu');
-        // iframe.id = 'codeyzer-sifre-bulundu';
-        // document.body.append(iframe);
-// 
-        // sifreEklePanel.$codeyzerKapat.addEventListener('click', () => {
-        //     div.remove();
-        //     // @ts-ignore
-        //     chrome.storage.local.set({login: null}, function() {
-// 
-        //     });
-        // });
-        
-
-    }
-
     /**
      * 
      * @returns {HTMLInputElement}

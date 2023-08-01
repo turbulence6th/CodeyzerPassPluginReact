@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import { Sidebar } from 'primereact/sidebar';
 import Kasa from './Kasa';
 import { Button } from 'primereact/button';
+import Aktar from './Aktar';
+
+enum GelismisAyarlarPanelEnum {
+    KASA,
+    AKTAR
+}
 
 const GelismisAyarlar = () => {
 
-    const [seciliPanel, seciliPanelDegistir] = useState<string>();
+    const [seciliPanel, seciliPanelDegistir] = useState<GelismisAyarlarPanelEnum>(GelismisAyarlarPanelEnum.KASA);
 
     return (
         <div className='flex gap-3 min-h-screen'>
@@ -13,27 +19,21 @@ const GelismisAyarlar = () => {
                 <Button 
                     label='Kasa' 
                     className='w-full' 
-                    onClick={() => seciliPanelDegistir('Kasa')} 
+                    onClick={() => seciliPanelDegistir(GelismisAyarlarPanelEnum.KASA)} 
                     size='large' 
-                    outlined={seciliPanel === 'Kasa'}
+                    outlined={seciliPanel === GelismisAyarlarPanelEnum.KASA}
                 />
                 <Button 
-                    label='Deneme' 
+                    label='Aktar' 
                     className='w-full' 
-                    onClick={() => seciliPanelDegistir('Deneme')} 
+                    onClick={() => seciliPanelDegistir(GelismisAyarlarPanelEnum.AKTAR)} 
                     size='large' 
-                    outlined={seciliPanel === 'Deneme'}
-                />
-                <Button 
-                    label='Deneme2' 
-                    className='w-full' 
-                    onClick={() => seciliPanelDegistir('Deneme2')} 
-                    size='large' 
-                    outlined={seciliPanel === 'Deneme2'}
+                    outlined={seciliPanel === GelismisAyarlarPanelEnum.AKTAR}
                 />
             </div>
             <div className='flex-grow-1'>
-                { seciliPanel === 'Kasa' && <Kasa/> }
+                { seciliPanel === GelismisAyarlarPanelEnum.KASA && <Kasa/> }
+                { seciliPanel === GelismisAyarlarPanelEnum.AKTAR && <Aktar/> }
             </div>
         </div>
     );

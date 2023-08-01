@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 
 import com.codeyzer.android.dto.CodeyzerDepoReducer;
 import com.codeyzer.android.dto.CodeyzerPersistRoot;
-import com.codeyzer.android.dto.Depo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -13,16 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PrefUtil {
-
-    public static Depo getDepo(Context context) {
-        try {
-            SharedPreferences capacitorSharedPreferences = context.getSharedPreferences("CapacitorStorage", Context.MODE_PRIVATE);
-            String depoStr = capacitorSharedPreferences.getString("depo", "{}");
-            return new ObjectMapper().readValue(depoStr, Depo.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static CodeyzerDepoReducer getCodeyzerDepoReducer(Context context) {
         try {
