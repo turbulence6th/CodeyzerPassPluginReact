@@ -1,6 +1,9 @@
 package com.codeyzer.android;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -127,5 +130,14 @@ public class CodeyzerAutofillPlugin extends Plugin {
     @PluginMethod
     public void otomatikDoldurEtkinlestir(PluginCall call) {
         launcher.launch(call);
+    }
+
+    @PluginMethod
+    public void sonKullanilanAndroidPaketGetir(PluginCall call) {
+
+
+        JSObject ret = new JSObject();
+        ret.put("androidPaket", null);
+        call.resolve(ret);
     }
 }

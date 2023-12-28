@@ -1,7 +1,7 @@
 {
 	"appId": "com.codeyzer.android",
 	"appName": "Codeyzer Pass",
-	"webDir": "build",
+	"webDir": "build_android",
 	"bundledWebRuntime": false,
 	"server": {
 		"allowNavigation": [

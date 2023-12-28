@@ -41,9 +41,10 @@ class AndroidAygitYonetici extends AygitYonetici {
         });
     }
 
-    override async platformGetir(): Promise<{ platform: string }> {
+    override async platformGetir(): Promise<{ platform: string, androidPaket: string }> {
          return {
-            platform: ''
+            platform: '',
+            androidPaket: (await CodeyzerAutofillPlugin.sonKullanilanAndroidPaketGetir()).androidPaket
          }
     }
 

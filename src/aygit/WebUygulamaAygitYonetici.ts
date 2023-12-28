@@ -32,9 +32,10 @@ class WebUygulamaAygitYonetici extends AygitYonetici {
         return navigator.clipboard.writeText(ifade);
     }
 
-    override async platformGetir(): Promise<{ platform: string }> {
+    override async platformGetir(): Promise<{ platform: string, androidPaket: string }> {
         return {
-            platform: ''
+            platform: '',
+            androidPaket: ''
         };
     }
 

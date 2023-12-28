@@ -6,6 +6,7 @@ interface CodeyzerAutofillPlugin {
     androidPaketGetir: () => Promise<{paketList: AndroidPaketSecenek[]}>
     otomatikDoldurBilgi: () => Promise<{etkin: boolean, destek: boolean}>
     otomatikDoldurEtkinlestir: () => Promise<void>
+    sonKullanilanAndroidPaketGetir: () => Promise<{androidPaket: string}>
 }
 
 export default registerPlugin('CodeyzerAutofillPlugin') as CodeyzerAutofillPlugin;

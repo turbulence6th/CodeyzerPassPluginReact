@@ -112,7 +112,7 @@
         /** @type {HTMLElement} */ let temp = sifreKutusu;
 
         while (temp) {
-            kullaniciAdiKutusu = /** @type {HTMLInputElement} */ (gorunurElementGetir(temp.querySelectorAll('input[type="text"], input[type="email"]')));
+            kullaniciAdiKutusu = /** @type {HTMLInputElement} */ (gorunurElementGetir(temp.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="tel"]')));
             if (kullaniciAdiKutusu) {
                 break;
             }

@@ -20,6 +20,7 @@ export interface HariciSifreGetirDTO {
 }
 
 export interface HariciSifreKaydetDTO {
+    kimlik?: string
     icerik: string
     kullaniciKimlik: string
 }

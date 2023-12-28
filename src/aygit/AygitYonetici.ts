@@ -9,7 +9,7 @@ abstract class AygitYonetici {
     abstract platformTipi(): PlatformTipi
     abstract sifreDoldur(kullaniciAdi: string, sifre: string): Promise<any>
     abstract panoyaKopyala(ifade: string): Promise<void>
-    abstract platformGetir(): Promise<{ platform: string }>
+    abstract platformGetir(): Promise<{ platform: string, androidPaket: string }>
     abstract sekmeAc(sekme: string): void
     abstract otomatikDoldurBilgi(): Promise<{etkin: boolean, destek: boolean}>
     abstract otomatikDoldurEtkinlestir(): Promise<void>

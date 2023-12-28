@@ -56,11 +56,12 @@ class ChromeAygitYonetici extends AygitYonetici {
         });
     }
 
-    override async platformGetir(): Promise<{ platform: string }> {
+    override async platformGetir(): Promise<{ platform: string, androidPaket: string }> {
          // @ts-ignore
          let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
          return {
-             platform: this.platformGetirHelper(tab.url)
+             platform: this.platformGetirHelper(tab.url),
+             androidPaket: ''
          };
     }
 

@@ -9,7 +9,6 @@ import { InputText } from 'primereact/inputtext';
 import { mesajBelirle } from '../ortak/CodeyzerReducer';
 import { MesajTipi } from '../ortak/BildirimMesaji';
 import { FilterMatchMode } from 'primereact/api';
-import KasaIskelet from './KasaIskelet';
 import Yukleniyor from '../ortak/Yukleniyor';
 
 interface HariciSifreDesifreTabloSatir extends HariciSifreDesifre {
@@ -86,7 +85,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.platform} 
+                                value={hsd.icerik.platform || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -102,7 +101,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.androidPaket} 
+                                value={hsd.icerik.androidPaket || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -118,7 +117,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.kullaniciAdi} 
+                                value={hsd.icerik.kullaniciAdi || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -133,7 +132,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.sifre} 
+                                value={hsd.icerik.sifre || ''} 
                                 type={hsd.sifreGoster ? 'text' : 'password'}
                                 className='w-full h-full'
                             />
@@ -152,6 +151,8 @@ const Kasa = () => {
                                     icon={"pi pi-clone"} 
                                     className="p-button-success" 
                                     onClick={() => kopyalaTiklandi(hsd)} 
+                                    rounded
+                                    size='small'
                                 />
                             </Yukleniyor>
                             <Yukleniyor tip='engelle'>
@@ -160,6 +161,8 @@ const Kasa = () => {
                                     icon={"pi " + (hsd.sifreGoster ? "pi-eye" : "pi-eye-slash")} 
                                     className="p-button-success" 
                                     onClick={() => sifreGosterTiklandi(hsd)} 
+                                    rounded
+                                    size='small'
                                 />
                             </Yukleniyor>
                         </div>

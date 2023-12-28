@@ -53,7 +53,7 @@ const OturumAc = () => {
     return (
         <div style={{paddingLeft: '5px', paddingRight: '5px'}}>
             <div className='flex justify-content-center'>
-                <h2>{t('oturumAc.baslik')}</h2>
+                <h1>{t('oturumAc.baslik')}</h1>
             </div>
             <form 
                 className='mt-3'

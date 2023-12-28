@@ -63,6 +63,13 @@ const AnaEkranSifreEkle = () => {
                 aygitYonetici.depodanSil('login');
             } 
         })
+
+        aygitYonetici?.platformGetir().then(cevap => {
+            if (!seciliHariciSifreKimlik) {
+                platformDegistir(cevap.platform);
+                androidPaketDegistir(cevap.androidPaket);
+            }
+        });
     }, [aygitYonetici]);
 
     const platformDegistir = (platform: string) => {
