@@ -66,8 +66,11 @@ const AnaEkranSifreEkle = () => {
 
         aygitYonetici?.platformGetir().then(cevap => {
             if (!seciliHariciSifreKimlik) {
-                platformDegistir(cevap.platform);
-                androidPaketDegistir(cevap.androidPaket);
+                hariciSifreIcerikDegistir({
+                    ...hariciSifreIcerik,
+                    platform: cevap.platform,
+                    androidPaket: cevap.androidPaket
+                });
             }
         });
     }, [aygitYonetici]);
