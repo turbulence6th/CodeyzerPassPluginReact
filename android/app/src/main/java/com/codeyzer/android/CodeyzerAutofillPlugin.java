@@ -12,6 +12,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.view.autofill.AutofillManager;
+import android.widget.Toast;
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.view.accessibility.AccessibilityManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
@@ -44,11 +47,13 @@ import java.util.stream.Collectors;
 @CapacitorPlugin(name = "CodeyzerAutofillPlugin")
 public class CodeyzerAutofillPlugin extends Plugin {
 
-    private ActivityResultLauncher<PluginCall> launcher;
+    private ActivityResultLauncher<PluginCall> autofillLauncher;
+    private ActivityResultLauncher<PluginCall> accessibilityLauncher;
+    private PluginCall pendingCall;
 
     @Override
     protected void handleOnStart() {
-        launcher = getActivity().registerForActivityResult(new ActivityResultContract<PluginCall, Boolean>() {
+        autofillLauncher = getActivity().registerForActivityResult(new ActivityResultContract<PluginCall, Boolean>() {
 
             private PluginCall call;
 
@@ -57,17 +62,43 @@ public class CodeyzerAutofillPlugin extends Plugin {
             public Intent createIntent(Context context, PluginCall call) {
                 this.call = call;
                 return new Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE, Uri.parse("package:com.codeyzer.android"));
-//                return new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             }
 
             @Override
             public Boolean parseResult(int resultCode, Intent result) {
-                call.resolve();
+                // Autofill etkinleştirildikten sonra Accessibility'yi etkinleştir
+                if (pendingCall != null) {
+                    accessibilityLauncher.launch(pendingCall);
+                }
                 return resultCode == Activity.RESULT_OK;
             }
 
         }, result -> {
+            // Sonuç işleme gerekirse burada yapılabilir
+        });
+        
+        accessibilityLauncher = getActivity().registerForActivityResult(new ActivityResultContract<PluginCall, Boolean>() {
 
+            private PluginCall call;
+
+            @Override
+            public Intent createIntent(Context context, PluginCall call) {
+                this.call = call;
+                return new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            }
+
+            @Override
+            public Boolean parseResult(int resultCode, Intent result) {
+                if (pendingCall != null) {
+                    Toast.makeText(getContext(), "Erişilebilirlik ayarlarından Codeyzer Pass'i etkinleştirin", Toast.LENGTH_LONG).show();
+                    pendingCall.resolve();
+                    pendingCall = null;
+                }
+                return resultCode == Activity.RESULT_OK;
+            }
+
+        }, result -> {
+            // Sonuç işleme gerekirse burada yapılabilir
         });
     }
 
@@ -120,22 +151,41 @@ public class CodeyzerAutofillPlugin extends Plugin {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @PluginMethod
     public void otomatikDoldurBilgi(PluginCall call) {
+        // Autofill durumunu kontrol et
         AutofillManager autofillManager = getContext().getSystemService(AutofillManager.class);
+        boolean autofillEtkin = autofillManager.hasEnabledAutofillServices();
+        boolean autofillDestek = autofillManager.isAutofillSupported();
+        
+        // Accessibility durumunu kontrol et
+        AccessibilityManager accessibilityManager = (AccessibilityManager) getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
+        boolean accessibilityEtkin = false;
+        
+        if (accessibilityManager != null) {
+            List<AccessibilityServiceInfo> enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
+            for (AccessibilityServiceInfo service : enabledServices) {
+                if (service.getId().contains("com.codeyzer.android/.CodeyzerAccessibilityService")) {
+                    accessibilityEtkin = true;
+                    break;
+                }
+            }
+        }
+        
         JSObject ret = new JSObject();
-        ret.put("etkin", autofillManager.hasEnabledAutofillServices());
-        ret.put("destek", autofillManager.isAutofillSupported());
+        ret.put("autofillEtkin", autofillEtkin);
+        ret.put("accessibilityEtkin", accessibilityEtkin);
+        ret.put("etkin", autofillEtkin && accessibilityEtkin); // Her ikisi de etkin mi?
+        ret.put("destek", autofillDestek);
         call.resolve(ret);
     }
 
     @PluginMethod
     public void otomatikDoldurEtkinlestir(PluginCall call) {
-        launcher.launch(call);
+        pendingCall = call;
+        autofillLauncher.launch(call);
     }
 
     @PluginMethod
     public void sonKullanilanAndroidPaketGetir(PluginCall call) {
-
-
         JSObject ret = new JSObject();
         ret.put("androidPaket", null);
         call.resolve(ret);
