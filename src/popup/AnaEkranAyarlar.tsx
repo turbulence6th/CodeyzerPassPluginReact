@@ -7,7 +7,7 @@ import { Button } from "primereact/button";
 import * as HariciSifreApi from '../ortak/HariciSifreApi';
 import { useSelector } from "react-redux";
 import { hashle, sifrele } from "../ortak/CryptoUtil";
-import { kullaniciBelirle, mesajBelirle, sifirla, sifreGuncelDurumBelirle } from "../ortak/CodeyzerReducer";
+import { kullaniciBelirle, mesajBelirle, sifirla, sifreGuncelDurumBelirle, urlBelirle } from "../ortak/CodeyzerReducer";
 import { InputSwitch } from 'primereact/inputswitch';
 import { MesajTipi } from "../ortak/BildirimMesaji";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,7 @@ const AnaEkranAyarlar = () => {
 
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
     const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
+    const url = useSelector((state: RootState) => state.codeyzerDepoReducer.url);
     const [yeniAnaSifre, yeniAnaSifreDegistir] = useState<string>();
     const [sifreGoster, sifreGosterDegistir] = useState<boolean>(false);
     const [otomatikDoldurBilgi, otomatikDoldurBilgiDegistir] = useState<{etkin: boolean, destek: boolean}>();
@@ -86,12 +87,30 @@ const AnaEkranAyarlar = () => {
         otomatikDoldurBilgiGuncelle();
     }
 
+    const urlDegistir = (yeniUrl: string) => {
+        dispatch(urlBelirle(yeniUrl));
+    }
+
     return (
         <div>
             <form 
                 className='mt-3'
                 onSubmit={handleSubmit(sifreDegistirTiklandi)}
             >
+                <div className="field h-4rem">
+                    <div className='p-inputgroup'>
+                        <span className="p-float-label">
+                            <InputText 
+                                id="url" 
+                                type='text' 
+                                value={url} 
+                                onChange={(e) => urlDegistir(e.target.value)} 
+                                className={classNames('w-full')} 
+                            />
+                            <label htmlFor="url">Url</label>
+                        </span>
+                    </div>
+                </div>
                 <div className="field h-4rem">
                    <Yukleniyor tip="engelle">
                     <div className='p-inputgroup'>

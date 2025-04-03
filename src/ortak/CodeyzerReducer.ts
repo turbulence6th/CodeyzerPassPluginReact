@@ -7,6 +7,7 @@ import BildirimMesaji from "./BildirimMesaji";
 enum CodeyzerActionType {
     KULLANICI_BELIRLE = 'KULLANICI_BELIRLE',
     HARICI_SIFRE_LISTESI_BELIRLE = 'HARICI_SIFRE_LISTESI_BELIRLE',
+    URL_BELIRLE = 'URL_BELIRLE',
     HARICI_SIFRE_DESIFRE_LISTESI_BELIRLE = 'HARICI_SIFRE_DESIFRE_LISTESI_BELIRLE',
     SECILI_HARISI_SIFRE_KIMLIK_BELIRLE = 'SECILI_HARISI_SIFRE_KIMLIK_BELIRLE',
     ANA_EKRAN_TAB_BELIRLE = 'ANA_EKRAN_TAB_BELIRLE',
@@ -20,6 +21,7 @@ enum CodeyzerActionType {
 interface CodeyzerDepoReducerState {
     kullanici?: Kullanici
     hariciSifreListesi: HariciSifreDTO[]
+    url: string
 }
 
 interface CodeyzerHafizaReducerState {
@@ -34,7 +36,8 @@ interface CodeyzerHafizaReducerState {
 
 const CODEYZER_DEPO_VARSAYILAN_STATE: CodeyzerDepoReducerState = {
     kullanici: undefined,
-    hariciSifreListesi: []
+    hariciSifreListesi: [],
+    url: "http://localhost:9090/codeyzer-pass"
 }
 
 const CODEYZER_HAFIZA_VARSAYILAN_STATE: CodeyzerHafizaReducerState = {
@@ -59,6 +62,11 @@ const codeyzerDepoReducer = (state: CodeyzerDepoReducerState = CODEYZER_DEPO_VAR
                 ...state,
                 hariciSifreListesi: action.payload as HariciSifreDTO[]
             };
+        case CodeyzerActionType.URL_BELIRLE:
+            return {
+                ...state,
+                url: action.payload as string
+            }
         case CodeyzerActionType.SIFIRLA:
             return CODEYZER_DEPO_VARSAYILAN_STATE;
         default:
@@ -124,6 +132,13 @@ const hariciSifreListesiBelirle = (hariciSifreListesi: HariciSifreDTO[]) => {
     }
 };
 
+const urlBelirle = (url: string) => {
+    return {
+        type: CodeyzerActionType.URL_BELIRLE,
+        payload: url
+    }
+}
+
 const hariciSifreDesifreListesiBelirle = (hariciSifreDesifreListesi: HariciSifreDesifre[]) => {
     return {
         type: CodeyzerActionType.HARICI_SIFRE_DESIFRE_LISTESI_BELIRLE,
@@ -184,6 +199,7 @@ export {
     codeyzerHafizaReducer, 
     kullaniciBelirle, 
     hariciSifreListesiBelirle,
+    urlBelirle,
     hariciSifreDesifreListesiBelirle, 
     seciliHariciSifreKimlikBelirle, 
     aktifAnaEkranTabBelirle, 

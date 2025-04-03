@@ -33,6 +33,7 @@ function App() {
   const hariciSifreListesi = useSelector((state: RootState) => state.codeyzerDepoReducer.hariciSifreListesi);
   const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
   const sifreGuncelDurum = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifreGuncelDurum);
+  const url = useSelector((state: RootState) => state.codeyzerDepoReducer.url);
 
   useEffect(() => {
     axios.interceptors.request.clear();
@@ -69,6 +70,10 @@ function App() {
       html!.style.width = '350px';
     }
   }, []);
+
+  useEffect(() => {
+    axios.defaults.baseURL = url;
+  }, [url]);
 
   useEffect(() => {
     aygitYonetici?.mevcutDil().then(dil => {
