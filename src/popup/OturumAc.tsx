@@ -3,14 +3,16 @@ import { InputText } from 'primereact/inputtext';
 import { hashle } from '../ortak/CryptoUtil';
 import { dogrula, yeni } from '../ortak/KullaniciApi';
 import { Button } from 'primereact/button';
-import { useAppDispatch } from '..';
-import { kullaniciBelirle, sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
+import { RootState, useAppDispatch } from '..';
+import { kullaniciBelirle, sifreGuncelDurumBelirle, urlBelirle } from '../ortak/CodeyzerReducer';
 import { useValidator } from '@validator.tool/hook';
 import { classNames } from 'primereact/utils';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 const OturumAc = () => {
     
+    const url = useSelector((state: RootState) => state.codeyzerDepoReducer.url);
     const [kullaniciAdi, kullaniciAdiDegistir] = useState<string>('');
     const [sifre, sifreDegistir] = useState<string>('');
     const [sifreGoster, sifreGosterDegistir] = useState<boolean>(false);
@@ -49,6 +51,10 @@ const OturumAc = () => {
             dispatch(sifreGuncelDurumBelirle(false));
         }
     };
+
+    const urlDegistir = (yeniUrl: string) => {
+        dispatch(urlBelirle(yeniUrl));
+    }
       
     return (
         <div style={{paddingLeft: '5px', paddingRight: '5px'}}>
@@ -59,6 +65,20 @@ const OturumAc = () => {
                 className='mt-3'
                 onSubmit={handleSubmit(oturumAc)}
             >
+                 <div className="field h-4rem">
+                    <div className='p-inputgroup'>
+                        <span className="p-float-label">
+                            <InputText 
+                                id="url" 
+                                type='text' 
+                                value={url} 
+                                onChange={(e) => urlDegistir(e.target.value)} 
+                                className={classNames('w-full')} 
+                            />
+                            <label htmlFor="url">Url</label>
+                        </span>
+                    </div>
+                </div>
                 <div className="field h-4rem">
                     <span className="p-float-label">
                         <InputText 

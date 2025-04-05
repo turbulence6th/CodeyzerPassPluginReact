@@ -136,7 +136,7 @@ public final class CodeyzerAutofillService extends AutofillService {
             hariciSifreKaydetDTO.setIcerik(KriptoUtil.sifrele(hariciSifreIcerik, codeyzerDepoReducer.getKullanici().getSifre()));
             hariciSifreKaydetDTO.setKullaniciKimlik(codeyzerDepoReducer.getKullanici().getKullaniciKimlik());
 
-            Cevap<Void> cevap = HttpUtil.post("/hariciSifre/kaydet", hariciSifreKaydetDTO, new TypeReference<Cevap<Void>>() {});
+            Cevap<Void> cevap = HttpUtil.post(codeyzerDepoReducer.getUrl(), "/hariciSifre/kaydet", hariciSifreKaydetDTO, new TypeReference<>() {});
             if (cevap.getBasarili()) {
                 callback.onSuccess();
             } else {
