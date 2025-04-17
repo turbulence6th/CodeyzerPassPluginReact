@@ -27,6 +27,7 @@ enum HariciSifreDesifreIceriyeAktarDurum {
 const IceriyeAktar = () => {
 
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
+    const sifre = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifre);
     const [diyalogGoster, diyalogGosterDegistir] = useState(false);
     const [dosyaHariciSifreDesifreList, dosyaHariciSifreDesifreListDegistir] = useState<HariciSifreDesifre[]>([]);
     const [farkliOlanlariGöster, farkliOlanlariGösterDegistir] = useState(false);
@@ -56,7 +57,7 @@ const IceriyeAktar = () => {
             }
 
             const dosyaDesifreler = sifreler.map(x => {
-                const hariciSifreIcerik: HariciSifreIcerik = JSON.parse(desifreEt(x.icerik, kullanici.sifre));
+                const hariciSifreIcerik: HariciSifreIcerik = JSON.parse(desifreEt(x.icerik, sifre));
                 return {
                     kimlik: x.kimlik,
                     icerik: hariciSifreIcerik,
@@ -213,13 +214,13 @@ const IceriyeAktar = () => {
         if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.EKLE) {
             await kaydet({
                 kimlik: hariciSifreDesifre.kimlik,
-                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), kullanici.sifre),
+                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), sifre),
                 kullaniciKimlik: kullanici.kullaniciKimlik
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.GUNCELLE) {
             await guncelle({
                 kimlik: hariciSifreDesifre.kimlik,
-                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), kullanici.sifre),
+                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), sifre),
                 kullaniciKimlik: kullanici.kullaniciKimlik
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.SIL) {

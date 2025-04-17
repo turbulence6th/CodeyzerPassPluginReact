@@ -61,6 +61,14 @@ class WebUygulamaAygitYonetici extends AygitYonetici {
     override async androidPaketGetir(): Promise<AndroidPaketSecenek[]> {
         return [];
     }
+    
+    override async anaSifreGetir(): Promise<string> {
+        return '';
+    }
+
+    override async anaSifreKaydet(sifre: string): Promise<void> {
+        return;
+    }
 }
 
 export default WebUygulamaAygitYonetici;

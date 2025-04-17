@@ -26,6 +26,7 @@ const VARSAYILAN_HARICI_SIFRE: HariciSifreIcerik = {
 const AnaEkranSifreEkle = () => {
     
     const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici)!;
+    const sifre = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifre);
     const seciliHariciSifreKimlik = useSelector((state: RootState) => state.codeyzerHafizaReducer.seciliHariciSifreKimlik);
     const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const [hariciSifreIcerik, hariciSifreIcerikDegistir] = useState<HariciSifreIcerik>(VARSAYILAN_HARICI_SIFRE);
@@ -112,13 +113,13 @@ const AnaEkranSifreEkle = () => {
 
         if (!seciliHariciSifreKimlik) {
             await kaydet({
-                icerik: sifrele(JSON.stringify(hariciSifreIcerik), kullanici.sifre),
+                icerik: sifrele(JSON.stringify(hariciSifreIcerik), sifre),
                 kullaniciKimlik: kullanici.kullaniciKimlik
             });
         } else {
             await guncelle({
                 kimlik: seciliHariciSifreKimlik,
-                icerik: sifrele(JSON.stringify(hariciSifreIcerik), kullanici.sifre),
+                icerik: sifrele(JSON.stringify(hariciSifreIcerik), sifre),
                 kullaniciKimlik: kullanici.kullaniciKimlik
             });
         }
@@ -153,19 +154,6 @@ const AnaEkranSifreEkle = () => {
                             />
                             <label htmlFor="platform">{t('anaEkranSifreEkle.platform.label')}</label>
                         </span>
-                        <div id="platform-mesaj" className='hata text-xs pl-2'>
-                        {
-                            validator.message('platform', hariciSifreIcerik.platform, {
-                                validate: (val: string) => !val ? 
-                                    t('anaEkranSifreEkle.platform.hata.gerekli') : ''
-                            }) 
-                            ||
-                            validator.message('platform', hariciSifreIcerik.platform, {
-                                validate: (val: string) => val && !/^(\w+\.)*(\w+\.\w+)\/.*$/.test(val) ? 
-                                    t('anaEkranSifreEkle.platform.hata.regex') : ''
-                            }) 
-                        }
-                        </div>
                     </Yukleniyor>
                 </div>
                 <div className="field h-4rem">

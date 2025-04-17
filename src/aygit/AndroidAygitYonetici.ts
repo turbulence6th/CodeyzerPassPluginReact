@@ -67,6 +67,14 @@ class AndroidAygitYonetici extends AygitYonetici {
     override async androidPaketGetir(): Promise<AndroidPaketSecenek[]> {
         return (await CodeyzerAutofillPlugin.androidPaketGetir()).paketList;
     }
+
+    override async anaSifreGetir(): Promise<string> {
+        return "";
+    }
+
+    override async anaSifreKaydet(sifre: string): Promise<void> {
+        return;
+    }
 }
 
 export default AndroidAygitYonetici;

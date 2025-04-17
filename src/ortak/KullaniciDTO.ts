@@ -9,5 +9,5 @@ export interface KullaniciDogrulaDTO {
 export interface Kullanici {
     kullaniciKimlik: string
     kullaniciAdi: string
-    sifre: string
+    sifreHash: string
 }

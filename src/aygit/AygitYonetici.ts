@@ -15,6 +15,8 @@ abstract class AygitYonetici {
     abstract otomatikDoldurEtkinlestir(): Promise<void>
     abstract sifreListesiGuncelle(): Promise<void>
     abstract androidPaketGetir(): Promise<AndroidPaketSecenek[]>
+    abstract anaSifreGetir(): Promise<string>
+    abstract anaSifreKaydet(sifre: string): Promise<void>
 }
 
 export default AygitYonetici;

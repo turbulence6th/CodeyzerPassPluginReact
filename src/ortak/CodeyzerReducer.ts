@@ -9,13 +9,13 @@ enum CodeyzerActionType {
     HARICI_SIFRE_LISTESI_BELIRLE = 'HARICI_SIFRE_LISTESI_BELIRLE',
     URL_BELIRLE = 'URL_BELIRLE',
     HARICI_SIFRE_DESIFRE_LISTESI_BELIRLE = 'HARICI_SIFRE_DESIFRE_LISTESI_BELIRLE',
-    SECILI_HARISI_SIFRE_KIMLIK_BELIRLE = 'SECILI_HARISI_SIFRE_KIMLIK_BELIRLE',
+    SECILI_HARICI_SIFRE_KIMLIK_BELIRLE = 'SECILI_HARICI_SIFRE_KIMLIK_BELIRLE',
     ANA_EKRAN_TAB_BELIRLE = 'ANA_EKRAN_TAB_BELIRLE',
     SIFRE_GUNCEL_DURUM = 'SIFRE_GUNCEL_DURUM',
     MESAJ_BELIRLE = 'MESAJ_BELIRLE',
-    ANA_SIFRE_BELIRLE = 'ANA_SIFRE_BELIRLE',
     YUKLENIYOR_BELIRLE = 'YUKLENIYOR_BELIRLE',
-    SIFIRLA = 'SIFIRLA'
+    SIFRE_BELIRLE = 'SIFRE_BELIRLE',
+    SIFIRLA = 'SIFIRLA',
 }
 
 interface CodeyzerDepoReducerState {
@@ -30,14 +30,14 @@ interface CodeyzerHafizaReducerState {
     aktifAnaEkranTabEnum?: AnaEkranTabEnum
     sifreGuncelDurum: boolean
     mesaj?: BildirimMesaji
-    anaSifre?: string
-    yukleniyor: boolean
+    yukleniyor: boolean,
+    sifre: string
 }
 
 const CODEYZER_DEPO_VARSAYILAN_STATE: CodeyzerDepoReducerState = {
     kullanici: undefined,
     hariciSifreListesi: [],
-    url: "http://localhost:9090/codeyzer-pass"
+    url: "https://codeyzerpass.tail9fb8f4.ts.net"
 }
 
 const CODEYZER_HAFIZA_VARSAYILAN_STATE: CodeyzerHafizaReducerState = {
@@ -46,8 +46,8 @@ const CODEYZER_HAFIZA_VARSAYILAN_STATE: CodeyzerHafizaReducerState = {
     aktifAnaEkranTabEnum: undefined,
     sifreGuncelDurum: true,
     mesaj: undefined,
-    anaSifre: undefined,
-    yukleniyor: false
+    yukleniyor: false,
+    sifre: ''
 }
 
 const codeyzerDepoReducer = (state: CodeyzerDepoReducerState = CODEYZER_DEPO_VARSAYILAN_STATE, action: PayloadAction<any, CodeyzerActionType>) : CodeyzerDepoReducerState => {
@@ -69,6 +69,7 @@ const codeyzerDepoReducer = (state: CodeyzerDepoReducerState = CODEYZER_DEPO_VAR
             }
         case CodeyzerActionType.SIFIRLA:
             return CODEYZER_DEPO_VARSAYILAN_STATE;
+        
         default:
             return state
     }
@@ -81,7 +82,7 @@ const codeyzerHafizaReducer = (state: CodeyzerHafizaReducerState = CODEYZER_HAFI
                 ...state,
                 hariciSifreDesifreListesi: action.payload as HariciSifreDesifre[]
             };
-        case CodeyzerActionType.SECILI_HARISI_SIFRE_KIMLIK_BELIRLE:
+        case CodeyzerActionType.SECILI_HARICI_SIFRE_KIMLIK_BELIRLE:
             return {
                 ...state,
                 seciliHariciSifreKimlik: action.payload as string
@@ -101,15 +102,15 @@ const codeyzerHafizaReducer = (state: CodeyzerHafizaReducerState = CODEYZER_HAFI
                 ...state,
                 mesaj: action.payload as BildirimMesaji
             }
-        case CodeyzerActionType.ANA_SIFRE_BELIRLE:
-            return {
-                ...state,
-                anaSifre: action.payload as string
-            }
         case CodeyzerActionType.YUKLENIYOR_BELIRLE:
             return {
                 ...state,
                 yukleniyor: action.payload as boolean
+            }
+        case CodeyzerActionType.SIFRE_BELIRLE:
+            return {
+                ...state,
+                sifre: action.payload as string
             }
         case CodeyzerActionType.SIFIRLA:
             return CODEYZER_HAFIZA_VARSAYILAN_STATE;
@@ -124,6 +125,13 @@ const kullaniciBelirle = (kullanici: Kullanici) => {
         payload: kullanici
     }
 };
+
+const sifreBelirle = (sifre: string) => {
+    return {
+        type: CodeyzerActionType.SIFRE_BELIRLE,
+        payload: sifre
+    }
+}
 
 const hariciSifreListesiBelirle = (hariciSifreListesi: HariciSifreDTO[]) => {
     return {
@@ -148,7 +156,7 @@ const hariciSifreDesifreListesiBelirle = (hariciSifreDesifreListesi: HariciSifre
 
 const seciliHariciSifreKimlikBelirle = (hariciSifreKimlik: string) => {
     return {
-        type: CodeyzerActionType.SECILI_HARISI_SIFRE_KIMLIK_BELIRLE,
+        type: CodeyzerActionType.SECILI_HARICI_SIFRE_KIMLIK_BELIRLE,
         payload: hariciSifreKimlik
     }
 };
@@ -171,13 +179,6 @@ const mesajBelirle = (mesaj?: BildirimMesaji) => {
     return {
         type: CodeyzerActionType.MESAJ_BELIRLE,
         payload: mesaj
-    }
-}
-
-const anaSifreBelirle = (anaSifre: string) => {
-    return {
-        type: CodeyzerActionType.ANA_SIFRE_BELIRLE,
-        payload: anaSifre
     }
 }
 
@@ -205,7 +206,7 @@ export {
     aktifAnaEkranTabBelirle, 
     sifreGuncelDurumBelirle,
     mesajBelirle,
-    anaSifreBelirle,
     yukleniyorBelirle,
+    sifreBelirle,
     sifirla
 };

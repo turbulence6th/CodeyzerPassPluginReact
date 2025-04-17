@@ -61,7 +61,7 @@ const AnaEkranAyarlar = () => {
                     dispatch(kullaniciBelirle({
                         kullaniciKimlik: yeniKullaniciKimlik,
                         kullaniciAdi: kullanici.kullaniciAdi,
-                        sifre: yeniAnaSifre!
+                        sifreHash: hashle(yeniAnaSifre!)
                     }));
 
                     dispatch(sifreGuncelDurumBelirle(false));

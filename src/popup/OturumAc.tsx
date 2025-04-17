@@ -3,7 +3,7 @@ import { InputText } from 'primereact/inputtext';
 import { hashle } from '../ortak/CryptoUtil';
 import { dogrula, yeni } from '../ortak/KullaniciApi';
 import { Button } from 'primereact/button';
-import { RootState, useAppDispatch } from '..';
+import { AygitYoneticiKullan, RootState, useAppDispatch } from '..';
 import { kullaniciBelirle, sifreGuncelDurumBelirle, urlBelirle } from '../ortak/CodeyzerReducer';
 import { useValidator } from '@validator.tool/hook';
 import { classNames } from 'primereact/utils';
@@ -19,6 +19,7 @@ const OturumAc = () => {
     const dispatch = useAppDispatch();
     const { validator, handleSubmit, forceUpdate } = useValidator({messagesShown: false});
     const { t } = useTranslation();
+    const aygitYonetici = AygitYoneticiKullan();
 
     const oturumAc = async () => {
         const kullaniciKimlik = hashle(kullaniciAdi + ':' + sifre);
@@ -27,8 +28,10 @@ const OturumAc = () => {
             dispatch(kullaniciBelirle({
                 kullaniciKimlik,
                 kullaniciAdi,
-                sifre
+                sifreHash: hashle(sifre)
             }));
+            aygitYonetici?.anaSifreKaydet(sifre);
+            dispatch(sifreBelirle(sifre));
             dispatch(sifreGuncelDurumBelirle(false));
         } 
     };
@@ -46,8 +49,10 @@ const OturumAc = () => {
             dispatch(kullaniciBelirle({
                 kullaniciKimlik,
                 kullaniciAdi,
-                sifre
+                sifreHash: hashle(sifre)
             }));
+            aygitYonetici?.anaSifreKaydet(sifre);
+            dispatch(sifreBelirle(sifre));
             dispatch(sifreGuncelDurumBelirle(false));
         }
     };
@@ -143,3 +148,7 @@ const OturumAc = () => {
 }
 
 export default OturumAc;
+function sifreBelirle(sifre: string): any {
+    throw new Error('Function not implemented.');
+}
+
