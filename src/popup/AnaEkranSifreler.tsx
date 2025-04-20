@@ -7,12 +7,12 @@ import { useSelector } from 'react-redux';
 import { RootState, AygitYoneticiKullan, useAppDispatch } from '..';
 import { aktifAnaEkranTabBelirle, mesajBelirle, seciliHariciSifreKimlikBelirle, sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
 import AnaEkranTabEnum from './AnaEkranTabEnum';
-import * as HariciSifreApi from '../ortak/HariciSifreApi';
 import { MesajTipi } from '../ortak/BildirimMesaji';
 import { useTranslation } from 'react-i18next';
 import PlatformTipi from '../ortak/PlatformTipi';
 import { dialogGoster } from '../ortak/DialogUtil';
 import Yukleniyor from '../ortak/Yukleniyor';
+import { HariciSifreApi } from '../ortak/HariciSifreApi';
 
 const AnaEkranSifreler = () => {
 
@@ -38,10 +38,10 @@ const AnaEkranSifreler = () => {
             const aygitPlatform = await aygitYonetici?.platformGetir();
             if (aygitPlatform?.platform) {
                 const sekmedekiPlatform = alanAdiGetir(aygitPlatform.platform);
-                const platformHarisiSifreDesifre = hariciSifreDesifreListesi.find(hsd => alanAdiGetir(hsd.icerik.platform) === sekmedekiPlatform);
+                const platformHarisiSifreDesifre = hariciSifreDesifreListesi.find(hsd => alanAdiGetir(hsd.metadata.url) === sekmedekiPlatform);
                 if (platformHarisiSifreDesifre) {
                     seciliPlatformDegistir(sekmedekiPlatform);
-                    seciliHariciSifreKimlikDegistir(platformHarisiSifreDesifre.kimlik);
+                    seciliHariciSifreKimlikDegistir(platformHarisiSifreDesifre.id);
                 }
             }
         })();
@@ -50,9 +50,9 @@ const AnaEkranSifreler = () => {
     const platformSecenekleriGetir = () => {
         let alanAdiSet;
         if (seciliCihaz === 'web') {
-            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.icerik.platform).map(hsd => alanAdiGetir(hsd.icerik.platform)));
+            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.metadata.url).map(hsd => alanAdiGetir(hsd.metadata.url)));
         } else if (seciliCihaz === 'android') {
-            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.icerik.androidPaket).map(hsd => hsd.icerik.androidPaket));
+            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.metadata.android).map(hsd => hsd.metadata.android));
         } else {
             alanAdiSet = new Set<string>();
         }
@@ -69,20 +69,20 @@ const AnaEkranSifreler = () => {
         return hariciSifreDesifreListesi
         .filter(hsd => {
             if (seciliCihaz === 'web') {
-                return alanAdiGetir(hsd.icerik.platform) === seciliPlatform;
+                return alanAdiGetir(hsd.metadata.url) === seciliPlatform;
             } else if (seciliCihaz === 'android') {
-                return hsd.icerik.androidPaket === seciliPlatform;
+                return hsd.metadata.android === seciliPlatform;
             }
         })
         .map(hsd => ({
-            label: hsd.icerik.kullaniciAdi,
-            value: hsd.icerik.kullaniciAdi
+            label: hsd.data.kullaniciAdi,
+            value: hsd.data.kullaniciAdi
         }));
     }
 
     const seciliHariciSifreGetir = () => {
         return hariciSifreDesifreListesi
-        .find(hsd => hsd.kimlik === seciliHariciSifreKimlik);
+        .find(hsd => hsd.id === seciliHariciSifreKimlik);
     };
 
     const cihazDegisti = (deger: string) => {
@@ -100,19 +100,19 @@ const AnaEkranSifreler = () => {
         const hariciSifreDesifre = hariciSifreDesifreListesi
             .filter(hsd => {
                 if (seciliCihaz === 'web') {
-                    return alanAdiGetir(hsd.icerik.platform) === seciliPlatform;
+                    return alanAdiGetir(hsd.metadata.url) === seciliPlatform;
                 } else if (seciliCihaz === 'android') {
-                    return hsd.icerik.androidPaket === seciliPlatform;
+                    return hsd.metadata.android === seciliPlatform;
                 } 
 
                 return false;
             })
-            .find(hsd => hsd.icerik.kullaniciAdi === value);
-        seciliHariciSifreKimlikDegistir(hariciSifreDesifre?.kimlik);
+            .find(hsd => hsd.data.kullaniciAdi === value);
+        seciliHariciSifreKimlikDegistir(hariciSifreDesifre?.id);
     }
 
     const doldurTiklandi = () => {
-        aygitYonetici?.sifreDoldur(seciliHariciSifre?.icerik.kullaniciAdi!, seciliHariciSifre?.icerik.sifre!);
+        aygitYonetici?.sifreDoldur(seciliHariciSifre?.data.kullaniciAdi!, seciliHariciSifre?.data.sifre!);
     };
 
     const guncelleTiklandi = (hariciSifreKimlik: string) => {
@@ -123,14 +123,8 @@ const AnaEkranSifreler = () => {
     const silTiklandi = () => {
         dialogGoster(t, t('codeyzer.genel.uyari'), t('anaEkranSifreler.sil.click'), 
             async () => {
-                const cevap = await HariciSifreApi.sil({
-                    kimlik: seciliHariciSifreKimlik!,
-                    kullaniciKimlik: kullanici!.kullaniciKimlik
-                });
-                
-                if (cevap.basarili) {
-                    dispatch(sifreGuncelDurumBelirle(false));
-                }
+                await HariciSifreApi.delete(seciliHariciSifre!.id);
+                dispatch(sifreGuncelDurumBelirle(false));
             });
     }
 
@@ -139,7 +133,7 @@ const AnaEkranSifreler = () => {
     };
 
     const kopyalaTiklandi = async () => {
-        await aygitYonetici?.panoyaKopyala(seciliHariciSifre?.icerik.sifre!);
+        await aygitYonetici?.panoyaKopyala(seciliHariciSifre?.data.sifre!);
         dispatch(mesajBelirle({
             tip: MesajTipi.BILGI,
             icerik: t('anaEkranSifreler.kopyala.click')
@@ -180,7 +174,7 @@ const AnaEkranSifreler = () => {
             <div className="field">
                 <Yukleniyor height='3.4rem' tip='iskelet'>
                     <Dropdown 
-                        value={seciliHariciSifre?.icerik.kullaniciAdi} 
+                        value={seciliHariciSifre?.data.kullaniciAdi} 
                         onChange={(e) => kullanciAdiDegisti(e.value)} 
                         options={kullaniciAdiSecenekleriGetir()} 
                         placeholder={t('anaEkranSifreler.sifreSelect.bos')} 
@@ -196,7 +190,7 @@ const AnaEkranSifreler = () => {
                         <InputText 
                             id="sifre" 
                             type={sifreGoster ? 'text' : 'password'} 
-                            value={seciliHariciSifre?.icerik.sifre || ''} 
+                            value={seciliHariciSifre?.data.sifre || ''} 
                             className='w-full' 
                             placeholder={t('anaEkranSifreler.sifreSelectSifre.bos')}
                             disabled

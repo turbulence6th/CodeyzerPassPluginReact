@@ -1,13 +1,18 @@
-import { Cevap } from "./Cevap"
-import { KullaniciDogrulaDTO, KullaniciOlusturDTO } from "./KullaniciDTO"
-import axios from "axios";
+import { JwtResponseDTO, KullaniciLoginRequest, KullaniciOlusturRequestDTO, TokenRefreshRequestDTO } from "./KullaniciDTO";
+import { SunucuApi } from "./SunucuApi";
 
-export const yeni = async (istek: KullaniciOlusturDTO): Promise<Cevap<string>> => {
-    const response = await axios.post('/kullanici/yeni', istek);
-    return response.data;
-};
+export class KullaniciApi {
+    private static readonly BASE_URL = '/api/kullanici';
 
-export const dogrula = async (istek: KullaniciDogrulaDTO): Promise<Cevap<string>> => {
-    const response = await axios.post('/kullanici/dogrula', istek);
-    return response.data;
-};
+    static async register(request: KullaniciOlusturRequestDTO): Promise<JwtResponseDTO> {
+        return await SunucuApi.post(`${this.BASE_URL}/register`, request);
+    }
+
+    static async login(request: KullaniciLoginRequest): Promise<JwtResponseDTO> {
+        return await SunucuApi.post(`${this.BASE_URL}/login`, request);
+    }
+
+    static async refreshToken(request: TokenRefreshRequestDTO): Promise<JwtResponseDTO> {
+        return await SunucuApi.post(`${this.BASE_URL}/refresh`, request);
+    }
+}

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { hashle } from '../ortak/CryptoUtil';
-import { dogrula, yeni } from '../ortak/KullaniciApi';
 import { Button } from 'primereact/button';
 import { AygitYoneticiKullan, RootState, useAppDispatch } from '..';
-import { kullaniciBelirle, sifreGuncelDurumBelirle, urlBelirle } from '../ortak/CodeyzerReducer';
+import { sifreBelirle, sifreGuncelDurumBelirle, urlBelirle } from '../ortak/CodeyzerReducer';
 import { useValidator } from '@validator.tool/hook';
 import { classNames } from 'primereact/utils';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { bcryptHash, sha512, vaultIdOlustur } from '../ortak/CryptoUtil';
+import { KullaniciApi } from '../ortak/KullaniciApi';
+import { kullaniciBelirle } from '../ortak/CodeyzerReducer';
+
+const VAULT_SALT = "MIe8zZCjXgOe0QG5mJ0zRmYdjN7UnbACVjCkU7oPfJ0=";
 
 const OturumAc = () => {
     
@@ -22,18 +25,23 @@ const OturumAc = () => {
     const aygitYonetici = AygitYoneticiKullan();
 
     const oturumAc = async () => {
-        const kullaniciKimlik = hashle(kullaniciAdi + ':' + sifre);
-        const cevap = await dogrula({kimlik: kullaniciKimlik});
-        if (cevap.basarili) {
-            dispatch(kullaniciBelirle({
-                kullaniciKimlik,
-                kullaniciAdi,
-                sifreHash: hashle(sifre)
-            }));
-            aygitYonetici?.anaSifreKaydet(sifre);
-            dispatch(sifreBelirle(sifre));
-            dispatch(sifreGuncelDurumBelirle(false));
-        } 
+        const kullaniciKimlik = await vaultIdOlustur(kullaniciAdi, sifre, VAULT_SALT);
+        const sifreHash = await sha512(sifre);
+
+        const { accessToken, refreshToken } = await KullaniciApi.login({
+            kullaniciKimlik,
+            sifreHash
+        });
+
+        dispatch(kullaniciBelirle({
+            kullaniciKimlik,
+            sifreHash: await bcryptHash(sifre),
+            accessToken,
+            refreshToken
+        }));
+        aygitYonetici?.anaSifreKaydet(sifre);
+        dispatch(sifreBelirle(sifre));
+        dispatch(sifreGuncelDurumBelirle(false));
     };
 
     const kayitOl = async () => {
@@ -43,18 +51,24 @@ const OturumAc = () => {
             return;
         }
 
-        const kullaniciKimlik = hashle(kullaniciAdi + ':' + sifre);
-        const cevap = await yeni({kimlik: kullaniciKimlik});
-        if (cevap.basarili) {
-            dispatch(kullaniciBelirle({
-                kullaniciKimlik,
-                kullaniciAdi,
-                sifreHash: hashle(sifre)
-            }));
-            aygitYonetici?.anaSifreKaydet(sifre);
-            dispatch(sifreBelirle(sifre));
-            dispatch(sifreGuncelDurumBelirle(false));
-        }
+        const kullaniciKimlik = await vaultIdOlustur(kullaniciAdi, sifre, VAULT_SALT);
+        const sifreHash = await sha512(sifre);
+
+        const { accessToken, refreshToken } = await KullaniciApi.register({
+            kullaniciKimlik,
+            sifreHash
+        });
+
+        dispatch(kullaniciBelirle({
+            kullaniciKimlik,
+            sifreHash: await bcryptHash(sifre),
+            accessToken,
+            refreshToken
+        }));
+        aygitYonetici?.anaSifreKaydet(sifre);
+        dispatch(sifreBelirle(sifre));
+        dispatch(sifreGuncelDurumBelirle(false));
+
     };
 
     const urlDegistir = (yeniUrl: string) => {
@@ -148,7 +162,3 @@ const OturumAc = () => {
 }
 
 export default OturumAc;
-function sifreBelirle(sifre: string): any {
-    throw new Error('Function not implemented.');
-}
-

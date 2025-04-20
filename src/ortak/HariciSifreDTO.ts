@@ -1,47 +1,37 @@
 export interface HariciSifreDTO {
-    kimlik: string
-    icerik: string
+    id: string;
+    encryptedData: string;
+    encryptedMetadata: string;
+    aesIV: string;
+}
+
+export interface HariciSifreSaveRequestDTO {
+    id: string;
+    encryptedData: string;
+    encryptedMetadata: string;
+    aesIV: string;
+}
+
+export interface HariciSifreUpdateRequestDTO {
+    encryptedData: string;
+    encryptedMetadata: string;
+    aesIV: string;
 }
 
 export interface HariciSifreDesifre {
-    kimlik: string
-    icerik: HariciSifreIcerik
+    id: string;
+    data: HariciSifreHariciSifreData;
+    metadata: HariciSifreMetadata;
+    aesIV: string;
 }
 
-export interface HariciSifreIcerik {
-    platform: string
-    androidPaket: string
-    kullaniciAdi: string
-    sifre: string
+export interface HariciSifreHariciSifreData {
+    kullaniciAdi: string;
+    sifre: string;
 }
 
-export interface HariciSifreGetirDTO {
-    kullaniciKimlik: string
+export interface HariciSifreMetadata {
+    url: string;
+    android: string;
 }
-
-export interface HariciSifreKaydetDTO {
-    kimlik?: string
-    icerik: string
-    kullaniciKimlik: string
-}
-
-export interface HariciSifreGuncelleDTO {
-    kimlik: string
-    icerik: string
-    kullaniciKimlik: string
-}
-
-export interface HariciSifreSilDTO {
-    kimlik: string
-    kullaniciKimlik: string
-}
-
-export interface HariciSifreYenileDTO {
-    hariciSifreListesi: HariciSifreYenileElemanDTO[]
-    kullaniciKimlik: string
-    yeniKullaniciKimlik: string
-}
-
-export interface HariciSifreYenileElemanDTO {
-    icerik: string
-}
+    

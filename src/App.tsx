@@ -4,17 +4,20 @@ import { RootState, AygitYoneticiKullan, useAppDispatch } from '.';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import {
-  sifreBelirle, hariciSifreDesifreListesiBelirle, hariciSifreListesiBelirle,
-  mesajBelirle, sifreGuncelDurumBelirle, yukleniyorBelirle
+  sifreBelirle, hariciSifreDesifreListesiBelirle,
+  mesajBelirle, sifreGuncelDurumBelirle, yukleniyorBelirle,
+  hariciSifreListesiBelirle,
+  kullaniciBelirle
 } from './ortak/CodeyzerReducer';
-import axios from 'axios';
-import { Cevap } from './ortak/Cevap';
 import { MesajTipi } from './ortak/BildirimMesaji';
 import { useTranslation } from 'react-i18next';
-import { getir } from './ortak/HariciSifreApi';
-import { HariciSifreIcerik } from './ortak/HariciSifreDTO';
-import { desifreEt, hashle } from './ortak/CryptoUtil';
 import PasswordRequest from './ortak/PasswordRequest';
+import { HariciSifreApi } from './ortak/HariciSifreApi';
+import { HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from './ortak/HariciSifreDTO';
+import { base64ToUint8Array, bcryptHash, checkBcrypt, decryptWithAES, deriveAesKey, sha512 } from './ortak/CryptoUtil';
+import { api } from './ortak/SunucuApi';
+import { KullaniciApi } from './ortak/KullaniciApi';
+import { CodeyzerPassErrorResponseDTO } from './ortak/CodeyzerPassDTO';
 
 const mesajTip2PrimeType = (tip: MesajTipi): 'info' | 'warn' | 'error' => {
   switch (tip) {
@@ -49,30 +52,80 @@ function App() {
 
   // 1. Axios interceptor setup
   useEffect(() => {
-    const reqInterceptor = axios.interceptors.request.use(config => {
+    const reqInterceptor = api.interceptors.request.use(config => {
       dispatch(yukleniyorBelirle(true));
+      if (kullanici?.accessToken) {
+        config.headers.set('Authorization', `Bearer ${kullanici.accessToken}`);
+      }
       return config;
     });
-    const resInterceptor = axios.interceptors.response.use(
+    const resInterceptor = api.interceptors.response.use(
       response => {
-        const cevap: Cevap<any> = response.data;
-        if (!cevap.basarili) {
-          toast.current?.show({ severity: 'error', detail: t(cevap.mesaj), sticky: true });
-        }
         dispatch(yukleniyorBelirle(false));
         return response;
       },
-      error => {
-        toast.current?.show({ severity: 'error', detail: 'Beklenmedik bir hata oluştu' });
+      async error => {
+        const originalRequest = error.config;
+      
+        if (
+          error.response?.status === 401 &&
+          !originalRequest._retry &&
+          !originalRequest.url?.includes('/api/kullanici/refresh')
+        ) {
+          originalRequest._retry = true;
+      
+          try {
+            const refreshToken = kullanici.refreshToken;
+            const refreshTokenResponse = await KullaniciApi.refreshToken({ refreshToken });
+      
+            const { accessToken, refreshToken: newRefreshToken } = refreshTokenResponse;
+      
+            dispatch(kullaniciBelirle({
+              ...kullanici,
+              accessToken,
+              refreshToken: newRefreshToken
+            }));
+      
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return api(originalRequest);
+          } catch (refreshError) {
+            try {
+              const sifreHash = await sha512(sifre);
+      
+              const loginResponse = await KullaniciApi.login({
+                kullaniciKimlik: kullanici.kullaniciKimlik,
+                sifreHash
+              });
+      
+              const { accessToken, refreshToken } = loginResponse;
+      
+              dispatch(kullaniciBelirle({
+                kullaniciKimlik: kullanici.kullaniciKimlik,
+                sifreHash: await bcryptHash(sifre),
+                accessToken,
+                refreshToken
+              }));
+      
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+              return api(originalRequest);
+            } catch (loginError) {
+              // logout vs yönlendirme burada yapılabilir
+              return Promise.reject(loginError);
+            }
+          }
+        }
+      
+        const errorResponse = error.response?.data as CodeyzerPassErrorResponseDTO;
+        toast.current?.show({ severity: 'error', detail: errorResponse?.error });
         dispatch(yukleniyorBelirle(false));
         return Promise.reject(error);
       }
     );
     return () => {
-      axios.interceptors.request.eject(reqInterceptor);
-      axios.interceptors.response.eject(resInterceptor);
+      api.interceptors.request.eject(reqInterceptor);
+      api.interceptors.response.eject(resInterceptor);
     };
-  }, [dispatch, t]);
+  }, [dispatch, kullanici]);
 
   // 2. Ana bileşen yükleme
   useEffect(() => {
@@ -98,7 +151,7 @@ function App() {
 
   // 3. URL değişince axios baseURL güncelle
   useEffect(() => {
-    axios.defaults.baseURL = url;
+    api.defaults.baseURL = url;
   }, [url]);
 
   // 4. Dil ve ana şifre getir
@@ -122,10 +175,10 @@ function App() {
     if (!sifreGuncelDurum && kullanici) {
       (async () => {
         try {
-          const cevap = await getir({ kullaniciKimlik: kullanici.kullaniciKimlik });
-          dispatch(hariciSifreListesiBelirle(cevap.sonuc));
+            const hariciSifreDTOList = await HariciSifreApi.getAll();
+            dispatch(hariciSifreListesiBelirle(hariciSifreDTOList));
         } finally {
-          dispatch(sifreGuncelDurumBelirle(true));
+            dispatch(sifreGuncelDurumBelirle(true));
         }
       })();
     }
@@ -133,19 +186,29 @@ function App() {
 
   // 7. Harici şifreleri desifre et
   useEffect(() => {
-    if (sifre) {
-      const liste = hariciSifreListesi.map(x => ({
-        kimlik: x.kimlik,
-        icerik: JSON.parse(desifreEt(x.icerik, sifre)) as HariciSifreIcerik
-      }));
-      dispatch(hariciSifreDesifreListesiBelirle(liste));
-      aygitYonetici?.sifreListesiGuncelle();
-    }
+    hariciSifreDesifreEt();
   }, [hariciSifreListesi, sifre, dispatch, aygitYonetici]);
 
+  const hariciSifreDesifreEt = async () => {
+    if (sifre) {
+      const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
+      const hariciSifreDesifreListesi: HariciSifreDesifre[] = await Promise.all(hariciSifreListesi.map(async hariciSifreDTO => {
+        const iv = base64ToUint8Array(hariciSifreDTO.aesIV);
+        return {
+          id: hariciSifreDTO.id,
+          data: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedData, iv)) as HariciSifreHariciSifreData,
+          metadata: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedMetadata, iv)) as HariciSifreMetadata,
+          aesIV: hariciSifreDTO.aesIV
+        };
+      }));
+      dispatch(hariciSifreDesifreListesiBelirle(hariciSifreDesifreListesi));
+      aygitYonetici?.sifreListesiGuncelle();
+    }
+  }
+  
   // 8. Ana şifre kontrol ve kaydet
-  const anaSifreKaydet = (s: string) => {
-    if (kullanici.sifreHash === hashle(s)) {
+  const anaSifreKaydet = async (s: string) => {
+    if (await checkBcrypt(s, kullanici.sifreHash)) {
       aygitYonetici?.anaSifreKaydet(s);
       dispatch(sifreBelirle(s));
     }

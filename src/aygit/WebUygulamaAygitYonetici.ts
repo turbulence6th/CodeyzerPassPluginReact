@@ -63,11 +63,11 @@ class WebUygulamaAygitYonetici extends AygitYonetici {
     }
     
     override async anaSifreGetir(): Promise<string> {
-        return '';
+        return sessionStorage['anaSifre'];
     }
 
     override async anaSifreKaydet(sifre: string): Promise<void> {
-        return;
+        sessionStorage['anaSifre'] = sifre;
     }
 }
 

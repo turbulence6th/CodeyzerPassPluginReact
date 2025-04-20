@@ -34,7 +34,7 @@ const Kasa = () => {
     }, [hariciSifreDesifreListesi]);
 
     const kopyalaTiklandi = (hsd: HariciSifreDesifreTabloSatir) => {
-        aygitYonetici?.panoyaKopyala(hsd.icerik.sifre);
+        aygitYonetici?.panoyaKopyala(hsd.data.sifre);
         dispatch(mesajBelirle({
             tip: MesajTipi.BILGI,
             icerik: 'Kopyalandı'
@@ -85,7 +85,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.platform || ''} 
+                                value={hsd.metadata.url || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -101,7 +101,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.androidPaket || ''} 
+                                value={hsd.metadata.android || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -117,7 +117,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.kullaniciAdi || ''} 
+                                value={hsd.data.kullaniciAdi || ''} 
                                 className='w-full h-full'
                             />
                         </Yukleniyor>
@@ -132,7 +132,7 @@ const Kasa = () => {
                     (hsd: HariciSifreDesifreTabloSatir) => (
                         <Yukleniyor tip='iskelet' height='3rem'>
                             <InputText 
-                                value={hsd.icerik.sifre || ''} 
+                                value={hsd.data.sifre || ''} 
                                 type={hsd.sifreGoster ? 'text' : 'password'}
                                 className='w-full h-full'
                             />

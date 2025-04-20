@@ -4,7 +4,6 @@ import { RadioButton } from "primereact/radiobutton";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "..";
-import { desifreEt } from "../ortak/CryptoUtil";
 
 const DisariyaAktar = () => {
 
@@ -30,16 +29,15 @@ const DisariyaAktar = () => {
             if (disaAktarFormat === 'json') {
                 icerik = JSON.stringify(hariciSifreListesi);
             } else if (disaAktarFormat === 'csv') {
-                icerik = hariciSifreListesi.map(hs => `"${hs.kimlik}","${hs.icerik}"`).reduce((x, y) => x + "\r\n" + y);
+                icerik = hariciSifreListesi.map(hs => `"${hs.id}","${hs.encryptedData}","${hs.encryptedMetadata}","${hs.aesIV}"`).reduce((x, y) => x + "\r\n" + y);
             }
         } else {
             if (disaAktarFormat === 'json') {
                 icerik = JSON.stringify(hariciSifreDesifreListesi);
             } else if (disaAktarFormat === 'csv') {
-                icerik = hariciSifreDesifreListesi.map(hs => `"${hs.kimlik}","${hs.icerik}"`).reduce((x, y) => x + "\r\n" + y);
+                icerik = hariciSifreDesifreListesi.map(hs => `"${hs.id}","${hs.data.kullaniciAdi}","${hs.data.sifre}","${hs.metadata.url}","${hs.metadata.android}","${hs.aesIV}"`).reduce((x, y) => x + "\r\n" + y);
             }
         }
-        
         
         indir(icerik);
     };

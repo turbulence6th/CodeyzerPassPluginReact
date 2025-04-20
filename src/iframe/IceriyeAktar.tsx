@@ -1,5 +1,5 @@
 import { FileUpload, FileUploadHandlerEvent } from 'primereact/fileupload';
-import { HariciSifreDTO, HariciSifreDesifre, HariciSifreIcerik } from '../ortak/HariciSifreDTO';
+import { HariciSifreDTO, HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from '../ortak/HariciSifreDTO';
 import { Dialog } from 'primereact/dialog';
 import { useRef, useState } from 'react';
 import { DataView } from 'primereact/dataview';
@@ -7,14 +7,14 @@ import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '..';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
-import { guncelle, kaydet, sil } from '../ortak/HariciSifreApi';
-import { desifreEt, sifrele } from '../ortak/CryptoUtil';
 import { sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
 import IceriyeAktarAyrinti from './IceriyeAktarAyrinti';
 import { classNames } from 'primereact/utils';
 import { dialogGoster } from '../ortak/DialogUtil';
 import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
+import { base64ToUint8Array, decryptWithAES, deriveAesKey, encryptWithAES, generateIV, uint8ArrayToBase64 } from '../ortak/CryptoUtil';
+import { HariciSifreApi } from '../ortak/HariciSifreApi';
 
 export interface HariciSifreDesifreIceriyeAktar extends HariciSifreDesifre {
     durum: HariciSifreDesifreIceriyeAktarDurum
@@ -38,6 +38,7 @@ const IceriyeAktar = () => {
     const dispatch = useAppDispatch();
 
     const dosyaSecilmesiniEleAl = async (event: FileUploadHandlerEvent) => {
+        
         const dosyaMetin = await dosyaOku(event.files[0]);
         const sifreler = JSON.parse(dosyaMetin) as any[];
         if (typeof(sifreler[0].icerik) === 'string') {
@@ -56,29 +57,37 @@ const IceriyeAktar = () => {
                 return;
             }
 
-            const dosyaDesifreler = sifreler.map(x => {
-                const hariciSifreIcerik: HariciSifreIcerik = JSON.parse(desifreEt(x.icerik, sifre));
-                return {
-                    kimlik: x.kimlik,
-                    icerik: hariciSifreIcerik,
-                }
-            });
+            const dosyaDesifreler = await hariciSifreDesifreEt(sifreler);
 
-            dosyaHariciSifreDesifreListDegistir(dosyaDesifreler as HariciSifreDesifre[]);
+            dosyaHariciSifreDesifreListDegistir(dosyaDesifreler);
         } else {
             dosyaHariciSifreDesifreListDegistir(sifreler as HariciSifreDesifre[]);
         }
 
-        
         diyalogGosterDegistir(true);
         event.options.clear();
+       
     };
 
+    const hariciSifreDesifreEt = async (hariciSifreListesi: HariciSifreDTO[]) => {
+        const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
+        const hariciSifreDesifreListesi: HariciSifreDesifre[] = await Promise.all(hariciSifreListesi.map(async hariciSifreDTO => {
+        const iv = base64ToUint8Array(hariciSifreDTO.aesIV);
+        return {
+            id: hariciSifreDTO.id,
+            data: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedData, iv)) as HariciSifreHariciSifreData,
+            metadata: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedMetadata, iv)) as HariciSifreMetadata,
+            aesIV: hariciSifreDTO.aesIV
+        };
+        }));
+        return hariciSifreDesifreListesi;
+    }
+
     const karsilastir = (solHsd: HariciSifreDesifre, sagHsd: HariciSifreDesifre) => {
-        return solHsd.icerik.platform === sagHsd.icerik.platform
-            && solHsd.icerik.androidPaket === sagHsd.icerik.androidPaket
-            && solHsd.icerik.kullaniciAdi === sagHsd.icerik.kullaniciAdi
-            && solHsd.icerik.sifre === sagHsd.icerik.sifre;
+        return solHsd.metadata.url === sagHsd.metadata.url
+            && solHsd.metadata.android === sagHsd.metadata.android
+            && solHsd.data.kullaniciAdi === sagHsd.data.kullaniciAdi
+            && solHsd.data.sifre === sagHsd.data.sifre;
     };
 
     const durum2Renk = (durum: HariciSifreDesifreIceriyeAktarDurum) => {
@@ -121,9 +130,10 @@ const IceriyeAktar = () => {
     }
 
     const iceriAktarSifreListesiGetir = () : HariciSifreDesifreIceriyeAktar[] => {
+             
         let sonuc: HariciSifreDesifreIceriyeAktar[] = [];
         for (let hariciSifreDesifre of hariciSifreDesifreListesi) {
-            let dosyaHariciSifreDesifre = dosyaHariciSifreDesifreList.find(hsd => hsd.kimlik === hariciSifreDesifre.kimlik);
+            let dosyaHariciSifreDesifre = dosyaHariciSifreDesifreList.find(hsd => hsd.id === hariciSifreDesifre.id);
             let durum = HariciSifreDesifreIceriyeAktarDurum.SIL;
             if (dosyaHariciSifreDesifre) {
                 if (karsilastir(hariciSifreDesifre, dosyaHariciSifreDesifre)) {
@@ -149,7 +159,7 @@ const IceriyeAktar = () => {
         }
 
         for (let dosyaHariciSifreDesifre of dosyaHariciSifreDesifreList) {
-            let hariciSifreDesifre = hariciSifreDesifreListesi.find(hsd => hsd.kimlik === dosyaHariciSifreDesifre.kimlik);
+            let hariciSifreDesifre = hariciSifreDesifreListesi.find(hsd => hsd.id === dosyaHariciSifreDesifre.id);
             if (!hariciSifreDesifre) {
                 sonuc.push({
                     ...dosyaHariciSifreDesifre,
@@ -173,9 +183,9 @@ const IceriyeAktar = () => {
         }
 
         return (
-            <div className={classNames("col-12", { hariciSifreDesifreIceriAlSecili: hsd.kimlik === seciliHariciSifreDesifreIceriAktarKimlik})} 
+            <div className={classNames("col-12", { hariciSifreDesifreIceriAlSecili: hsd.id === seciliHariciSifreDesifreIceriAktarKimlik})} 
                 style={{color: durum2Renk(hsd.durum), height: '75px'}} 
-                onClick={() => seciliHariciSifreDesifreIceriAktarKimlikDegistir(hsd.kimlik)}
+                onClick={() => seciliHariciSifreDesifreIceriAktarKimlikDegistir(hsd.id)}
             >
                 <div className='flex p-3 gap-3 align-items-center pl-5'>
                     <div>
@@ -184,15 +194,15 @@ const IceriyeAktar = () => {
                     <div className='flex flex-column line-height-2 flex-grow-1'>
                         <div 
                             className='text-base text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem'
-                            title={hsd.icerik.platform}
+                            title={hsd.metadata.url}
                         >
-                            { hsd.icerik.platform }
+                            { hsd.metadata.url }
                         </div>
                         <div 
                             className='text-sm text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem'
-                            title={hsd.icerik.kullaniciAdi}
+                            title={hsd.data.kullaniciAdi}
                         >
-                            { hsd.icerik.kullaniciAdi }
+                            { hsd.data.kullaniciAdi }
                         </div>
                     </div>
                     <div style={{ width: '100px' }}>
@@ -210,27 +220,42 @@ const IceriyeAktar = () => {
         );
     };
 
+   
+
     const sifreDegistir = async (hariciSifreDesifre: HariciSifreDesifreIceriyeAktar) => {
+
+        const iv = generateIV();
+        const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
+        const encryptedData = await encryptWithAES(aesKey, JSON.stringify({ 
+            kullaniciAdi: hariciSifreDesifre.data.kullaniciAdi, 
+            sifre: hariciSifreDesifre.data.sifre
+        } as HariciSifreHariciSifreData), iv);
+
+        const encryptedMetadata = await encryptWithAES(aesKey, JSON.stringify({ 
+            url: hariciSifreDesifre.metadata.url, 
+            android: hariciSifreDesifre.metadata.android
+        } as HariciSifreMetadata), iv);
+
+    
         if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.EKLE) {
-            await kaydet({
-                kimlik: hariciSifreDesifre.kimlik,
-                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), sifre),
-                kullaniciKimlik: kullanici.kullaniciKimlik
+            await HariciSifreApi.save({
+                id: hariciSifreDesifre.id,
+                encryptedData,
+                encryptedMetadata,
+                aesIV: uint8ArrayToBase64(iv),
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.GUNCELLE) {
-            await guncelle({
-                kimlik: hariciSifreDesifre.kimlik,
-                icerik: sifrele(JSON.stringify(hariciSifreDesifre.icerik), sifre),
-                kullaniciKimlik: kullanici.kullaniciKimlik
+            await HariciSifreApi.update(hariciSifreDesifre.id, {
+                encryptedData,
+                encryptedMetadata,
+                aesIV: uint8ArrayToBase64(iv),
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.SIL) {
-            await sil({
-                kimlik: hariciSifreDesifre.kimlik,
-                kullaniciKimlik: kullanici.kullaniciKimlik
-            });
+            await HariciSifreApi.delete(hariciSifreDesifre.id);
         }
 
         dispatch(sifreGuncelDurumBelirle(false));
+       
     }
 
     const diyalogKapat = () => {
@@ -239,7 +264,14 @@ const IceriyeAktar = () => {
     };
 
     const iceriAktarSifreListesi = iceriAktarSifreListesiGetir();
-    const seciliHariciSİfreDesifreIceriAktar = iceriAktarSifreListesi.find(hsd => hsd.kimlik === seciliHariciSifreDesifreIceriAktarKimlik);
+
+    const hepsiniUygula = async () => {
+        for (let hsd of iceriAktarSifreListesi) {
+            await sifreDegistir(hsd);
+        }
+    };
+
+    const seciliHariciSifreDesifreIceriAktar = iceriAktarSifreListesi.find(hsd => hsd.id === seciliHariciSifreDesifreIceriAktarKimlik);
 
     return (
         <>
@@ -257,6 +289,14 @@ const IceriyeAktar = () => {
                 <div className='flex flex-row gap-5'>
                     <div className='flex flex-column'>
                         <div className="flex align-items-center">
+                            <Button 
+                                type="button" 
+                                label="Hepsini uygula" 
+                                severity="warning"
+                                onClick={hepsiniUygula} 
+                            />
+                        </div>
+                        <div className="flex align-items-center mt-3">
                             <Checkbox 
                                 inputId="farkliOlaniGoster" 
                                 onChange={e => farkliOlanlariGösterDegistir(e.checked!)} 
@@ -267,7 +307,7 @@ const IceriyeAktar = () => {
                         <div style={{width: '1000px', height: '500px'}}>
                             <DataView 
                                 value={iceriAktarSifreListesi} 
-                                itemTemplate={itemTemplate} 
+                                itemTemplate={itemTemplate}
                                 paginator 
                                 rows={5} 
                                 className='mt-3'
@@ -276,13 +316,14 @@ const IceriyeAktar = () => {
                         </div>
                     </div>
                     <div className='mt-5' style={{width: '1000px'}}>
-                        <IceriyeAktarAyrinti hariciSifreDesifreIceriAktar={seciliHariciSİfreDesifreIceriAktar}/>
+                        <IceriyeAktarAyrinti hariciSifreDesifreIceriAktar={seciliHariciSifreDesifreIceriAktar} />
                     </div>
                 </div>
-                
             </Dialog>
         </>
     );
+    
+
 };
 
 function dosyaOku(dosya: File): Promise<string> {

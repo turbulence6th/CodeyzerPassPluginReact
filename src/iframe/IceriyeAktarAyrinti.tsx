@@ -1,7 +1,6 @@
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { HariciSifreDesifreIceriyeAktar } from "./IceriyeAktar";
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
 interface IceriyeAktarAyrintiProps {
@@ -11,46 +10,45 @@ interface IceriyeAktarAyrintiProps {
 const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrintiProps) => {
 
     const [sifreGoster, sifreGosterDegistir] = useState(false);
-    const { t } = useTranslation();
 
     return (
         <div>
             <div className="field h-4rem">
                 <span className="p-float-label">
                     <InputText 
-                        id="platform" 
-                        value={hariciSifreDesifreIceriAktar?.icerik.platform || ''} 
+                        id="url" 
+                        value={hariciSifreDesifreIceriAktar?.metadata.url || ''} 
                         className='w-full'
                         inputMode='url'
-                        aria-describedby="platform-mesaj"
+                        aria-describedby="url-mesaj"
                         disabled
                     />
-                    <label htmlFor="platform">{t('anaEkranSifreEkle.platform.label')}</label>
+                    <label htmlFor="url">Url</label>
                 </span>
             </div>
             <div className="field h-4rem">
                 <span className="p-float-label">
                     <InputText 
                         id="androidPaket" 
-                        value={hariciSifreDesifreIceriAktar?.icerik.androidPaket || ''} 
+                        value={hariciSifreDesifreIceriAktar?.metadata.android || ''} 
                         className='w-full'
                         aria-describedby="android-paket-mesaj"
                         disabled
                     />
-                    <label htmlFor="androidPaket">{t('anaEkranSifreEkle.androidPaket.placeholder')}</label>
+                    <label htmlFor="androidPaket">Android Paket</label>
                 </span>
             </div>
             <div className="field h-4rem">
                 <span className="p-float-label">
                     <InputText 
                         id="kullaniciAdi" 
-                        value={hariciSifreDesifreIceriAktar?.icerik.kullaniciAdi || ''}  
+                        value={hariciSifreDesifreIceriAktar?.data.kullaniciAdi || ''}  
                         className='w-full' 
                         inputMode='email'
                         aria-describedby="kullanici-adi-mesaj"
                         disabled
                     />
-                    <label htmlFor="kullaniciAdi">{t('anaEkranSifreEkle.kullaniciAdi.label')}</label>
+                    <label htmlFor="kullaniciAdi">Kullanıcı Adı</label>
                 </span>
             </div>
             <div className="field h-4rem">
@@ -59,12 +57,12 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
                         <InputText 
                             id="sifre" 
                             type={sifreGoster ? 'text' : 'password'} 
-                            value={hariciSifreDesifreIceriAktar?.icerik.sifre || ''} 
+                            value={hariciSifreDesifreIceriAktar?.data.sifre || ''} 
                             className='w-full' 
                             aria-describedby="sifre-mesaj"
                             disabled
                         />
-                        <label htmlFor="sifre">{t('anaEkranSifreEkle.sifre.label')}</label>
+                        <label htmlFor="sifre">Şifre</label>
                     </span>
                     <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
                 </div>

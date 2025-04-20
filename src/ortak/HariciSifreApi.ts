@@ -1,28 +1,22 @@
-import { Cevap } from "./Cevap";
-import { HariciSifreDTO, HariciSifreGetirDTO, HariciSifreGuncelleDTO, HariciSifreKaydetDTO, HariciSifreSilDTO, HariciSifreYenileDTO } from "./HariciSifreDTO";
-import axios from "axios";
+import { HariciSifreDTO, HariciSifreSaveRequestDTO, HariciSifreUpdateRequestDTO } from "./HariciSifreDTO";
+import { SunucuApi } from "./SunucuApi";
 
-export const getir = async (istek: HariciSifreGetirDTO): Promise<Cevap<HariciSifreDTO[]>> => {
-    const response = await axios.post('/hariciSifre/getir', istek);
-    return response.data;
-};
+export class HariciSifreApi {
+    private static readonly BASE_URL = '/api/harici-sifre';
 
-export const kaydet = async (istek: HariciSifreKaydetDTO): Promise<Cevap<void>> => {
-    const response = await axios.post('/hariciSifre/kaydet', istek);
-    return response.data;
-};
+    static async getAll(): Promise<HariciSifreDTO[]> {
+        return await SunucuApi.get(this.BASE_URL);
+    }
 
-export const guncelle = async (istek: HariciSifreGuncelleDTO): Promise<Cevap<void>> => {
-    const response = await axios.post('/hariciSifre/guncelle', istek);
-    return response.data;
-};
+    static async save(dto: HariciSifreSaveRequestDTO): Promise<HariciSifreDTO> {
+        return await SunucuApi.post(`${this.BASE_URL}/kaydet`, dto);
+    }
 
-export const sil = async (istek: HariciSifreSilDTO): Promise<Cevap<void>> => {
-    const response = await axios.post('/hariciSifre/sil', istek);
-    return response.data;
-};
+    static async update(id: string, dto: HariciSifreUpdateRequestDTO): Promise<HariciSifreDTO> {
+        return await SunucuApi.put(`${this.BASE_URL}/guncelle/${id}`, dto);
+    }
 
-export const sifreleriYenile = async (istek: HariciSifreYenileDTO): Promise<Cevap<void>> => {
-    const response = await axios.post('/hariciSifre/yenile', istek);
-    return response.data;
-};
+    static async delete(id: string): Promise<void> {
+        await SunucuApi.delete(`${this.BASE_URL}/sil/${id}`);
+    }
+}

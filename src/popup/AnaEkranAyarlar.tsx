@@ -4,16 +4,13 @@ import { AygitYoneticiKullan, RootState, useAppDispatch } from "..";
 import { useValidator } from "@validator.tool/hook";
 import { classNames } from "primereact/utils";
 import { Button } from "primereact/button";
-import * as HariciSifreApi from '../ortak/HariciSifreApi';
 import { useSelector } from "react-redux";
-import { hashle, sifrele } from "../ortak/CryptoUtil";
-import { kullaniciBelirle, mesajBelirle, sifirla, sifreGuncelDurumBelirle, urlBelirle } from "../ortak/CodeyzerReducer";
 import { InputSwitch } from 'primereact/inputswitch';
-import { MesajTipi } from "../ortak/BildirimMesaji";
 import { useTranslation } from "react-i18next";
 import PlatformTipi from "../ortak/PlatformTipi";
 import { dialogGoster } from "../ortak/DialogUtil";
 import Yukleniyor from "../ortak/Yukleniyor";
+import { sifirla, urlBelirle } from "../ortak/CodeyzerReducer";
 
 const AnaEkranAyarlar = () => {
 
@@ -45,7 +42,7 @@ const AnaEkranAyarlar = () => {
                     return;
                 }
 
-                const yeniKullaniciKimlik = hashle(kullanici.kullaniciAdi + ':' + yeniAnaSifre);
+                /** 
                 const yeniHariciSifreListesi = hariciSifreDesifreListesi
                     .map(hsd => ({
                         icerik: sifrele(JSON.stringify(hsd.icerik), yeniAnaSifre!)
@@ -54,14 +51,13 @@ const AnaEkranAyarlar = () => {
                 const cevap = await HariciSifreApi.sifreleriYenile({
                     hariciSifreListesi: yeniHariciSifreListesi,
                     kullaniciKimlik: kullanici.kullaniciKimlik,
-                    yeniKullaniciKimlik: yeniKullaniciKimlik
                 });
 
                 if (cevap.basarili) {
                     dispatch(kullaniciBelirle({
-                        kullaniciKimlik: yeniKullaniciKimlik,
+                        kullaniciKimlik: kullanici.kullaniciKimlik,
                         kullaniciAdi: kullanici.kullaniciAdi,
-                        sifreHash: hashle(yeniAnaSifre!)
+                        sifreHash: await hash(yeniAnaSifre!)
                     }));
 
                     dispatch(sifreGuncelDurumBelirle(false));
@@ -69,7 +65,9 @@ const AnaEkranAyarlar = () => {
                         tip: MesajTipi.BILGI,
                         icerik: 'Ana şifreniz değiştirildi'
                     }));
+                    
                 }
+                */
             }
         );
     };
