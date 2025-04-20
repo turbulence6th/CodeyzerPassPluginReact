@@ -1,6 +1,6 @@
 {
-  "name": "chrome-react-seo-extension",
-  "version": "0.1.0",
+  "name": "codeyzer-pass",
+  "version": "3.0.0",
   "private": true,
   "dependencies": {
     "@capacitor/android": "^5.0.0",

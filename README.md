@@ -1,46 +1,92 @@
-# Getting Started with Create React App
+# Codeyzer Pass
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Codeyzer Pass, hem Android hem de Chrome uzantısı olarak çalışan bir şifre yöneticisidir. React, Redux, TypeScript ve Capacitor teknolojileriyle geliştirilmiştir.
 
-## Available Scripts
+## 🚀 Özellikler
 
-In the project directory, you can run:
+- 🔐 Şifre saklama ve yönetimi
+- 🌐 Chrome uzantısı olarak kullanım
+- 📱 Android mobil uygulama desteği (Capacitor ile)
+- 🌍 Çoklu dil desteği (i18next)
+- 📦 Durum yönetimi için Redux + Persist + State Sync
+- 💾 Cihazda şifreli saklama (bcryptjs)
+- ⚡ Modern ve hızlı kullanıcı arayüzü (PrimeReact + Bootstrap)
 
-### `npm start`
+## 🛠 Kurulum
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Gerekli Araçlar
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Node.js (v16 veya üzeri)
+- npm
+- Android Studio (mobil geliştirme için)
+- Chrome (uzantı testleri için)
 
-### `npm test`
+### Kurulum Adımları
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/kullanici/codeyzer-pass.git
+cd codeyzer-pass
+npm install
+```
 
-### `npm run build`
+## 📦 Geliştirme Komutları
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Web için başlat
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm run start:web
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Chrome uzantısı için build
 
-### `npm run eject`
+```bash
+npm run build:chrome
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Android için build ve senkronizasyon
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm run build:android
+npm run openAndroid
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 📁 Ortam Dosyaları
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Her platform için `.env` dosyaları bulunmaktadır:
 
-## Learn More
+- `.env.web`
+- `.env.chrome`
+- `.env.android`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Bu dosyalar `env-cmd` ile otomatik olarak yüklenir.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📚 Kullanılan Teknolojiler
+
+- React
+- Redux / Redux Persist / Redux State Sync
+- TypeScript
+- Capacitor (Android entegrasyonu)
+- PrimeReact / PrimeFlex / Bootstrap
+- bcryptjs / validatorjs
+- i18next
+
+## ✅ Test
+
+```bash
+npm test
+```
+
+## 🧪 Çevreler
+
+- `development`: Lokal geliştirme için
+- `production`: Canlı ortam
+
+## 👨‍💻 Geliştirici Notları
+
+- Rate limiting backend tarafında yapılmalıdır.
+- Şifreler asla düz metin olarak saklanmaz, bcrypt ile hash'lenir.
+- Android senkronizasyonu için `npx cap sync` komutu gereklidir.
+
+---
+
+MIT License © Codeyzer
