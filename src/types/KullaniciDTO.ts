@@ -22,4 +22,12 @@ export interface Kullanici {
 
 export interface TokenRefreshRequestDTO {
     refreshToken: string;
+}
+
+import { SifreGuncelleHariciSifreDTO } from "./HariciSifreDTO";
+
+export interface SifreGuncelleRequestDTO {
+    yeniKullaniciKimlik: string;
+    yeniSifreHash: string;
+    yeniHariciSifreList: SifreGuncelleHariciSifreDTO[];
 } 

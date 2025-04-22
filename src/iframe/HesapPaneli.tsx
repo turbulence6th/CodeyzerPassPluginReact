@@ -3,66 +3,158 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useSelector } from 'react-redux';
-import { RootState } from '..'; // Assuming RootState is exported from index
-import { usePasswordValidation } from '../hooks/usePasswordValidation'; // Import the hook
-import PasswordStrengthMeter from '../components/PasswordStrengthMeter'; // Import the meter
-import { classNames } from 'primereact/utils'; // Import classNames
-import { useValidator } from '@validator.tool/hook'; // Import useValidator for username
+import { RootState, useAppDispatch } from '..';
+import { hariciSifreListesiBelirle, kullaniciBelirle, sifreBelirle } from '../store/CodeyzerReducer';
+import { usePasswordValidation } from '../hooks/usePasswordValidation';
+import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
+import { classNames } from 'primereact/utils';
+import { useValidator } from '@validator.tool/hook';
+import {
+    vaultIdOlustur,
+    deriveAesKey,
+    encryptWithAES,
+    generateIV,
+    uint8ArrayToBase64,
+    sha512,
+    bcryptHash
+} from '../utils/CryptoUtil';
+import { VAULT_SALT } from '../constants/Constants';
+import { HariciSifreDTO, HariciSifreDesifre, SifreGuncelleHariciSifreDTO } from '../types/HariciSifreDTO';
+import { KullaniciApi } from '../services/KullaniciApi';
+import {
+    SifreGuncelleRequestDTO,
+    JwtResponseDTO
+} from '../types/KullaniciDTO';
 
 const HesapPaneli = () => {
-    // Removed kullanici state fetch as it's not used for the editable username
-    const [hesapKullaniciAdi, hesapKullaniciAdiDegistir] = useState(''); // State for editable username
+    // Redux state
+    const kullanici = useSelector((state: RootState) => state.codeyzerDepoReducer.kullanici);
+    const reduxSifre = useSelector((state: RootState) => state.codeyzerHafizaReducer.sifre);
+    const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
+    const dispatch = useAppDispatch();
+
+    const [hesapKullaniciAdi, hesapKullaniciAdiDegistir] = useState('');
     const [sifreGoster, sifreGosterDegistir] = useState(false);
     const [sifreTekrarGoster, sifreTekrarGosterDegistir] = useState(false);
+    const [kimlikEslesmeHatasi, kimlikEslesmeHatasiBelirle] = useState<string | null>(null);
 
-    // Validator hook for password fields
-    const { 
-        password, 
-        passwordConfirmation, 
-        handlePasswordChange, 
-        handlePasswordConfirmationChange, 
-        validator: passwordValidator, // Rename to avoid conflict
-        validateAll: validatePasswords, 
-        forceUpdate: forcePasswordUpdate 
+    const {
+        password,
+        passwordConfirmation,
+        handlePasswordChange,
+        handlePasswordConfirmationChange,
+        validator: passwordValidator,
+        validateAll: validatePasswords,
+        forceUpdate: forcePasswordUpdate
     } = usePasswordValidation({ validateConfirmation: true });
 
-    // Separate validator hook for username field
-    const { 
-        validator: usernameValidator, 
-        forceUpdate: forceUsernameUpdate, 
-        // message, fieldValid, allValid are accessed via usernameValidator object
+    const {
+        validator: fieldValidator,
+        forceUpdate: forceFieldUpdate,
     } = useValidator({
         messagesShown: false,
         rules: {
             hesapKullaniciAdi: {
-                 validate: (val: string) => !val ? 'Kullanıcı adı gerekli' : '',
-            }
+                // Kural güncellendi: Önce kimlik hatasını kontrol et
+                validate: (val: string) => (!val ? 'Kullanıcı adı gerekli' : ''),
+            },
         }
     });
 
-    const sifreDegistirTiklandi = () => {
-        // Validate both sets of fields
-        const passwordsAreValid = validatePasswords();
-        const usernameIsValid = usernameValidator.allValid(); // Use the validator object directly
+    const sifreDegistirTiklandi = async () => {
+        kimlikEslesmeHatasiBelirle(null);
+        fieldValidator.hideMessages();
 
-        if (!passwordsAreValid || !usernameIsValid) {
-            // Show messages for invalid fields
+        const passwordsAreValid = validatePasswords();
+        const fieldsAreValid = fieldValidator.allValid();
+
+        if (!passwordsAreValid || !fieldsAreValid) {
             if (!passwordsAreValid) {
-                passwordValidator.showMessages(); // Use specific validator
+                passwordValidator.showMessages();
                 forcePasswordUpdate();
             }
-            if (!usernameIsValid) {
-                usernameValidator.showMessages(); // Use specific validator
-                forceUsernameUpdate(); 
+            if (!fieldsAreValid) {
+                fieldValidator.showMessages();
+                forceFieldUpdate();
             }
-            return; // Stop if any validation fails
+            return;
         }
-        
-        console.log("Şifre değiştirme işlemi tetiklendi (validasyon başarılı, API call yapılacak)");
-        console.log("Kullanıcı Adı:", hesapKullaniciAdi); // Log the entered username
-        // TODO: Şifre değiştirme mantığını buraya ekle
-        // 3. API'yi çağırarak şifreyi değiştir (pass hesapKullaniciAdi)
-        // 4. Başarı/hata mesajı göster.
+
+        if (!kullanici?.kullaniciKimlik || !reduxSifre) {
+            console.error("Kullanıcı veya şifre bilgisi Redux'ta bulunamadı.");
+            kimlikEslesmeHatasiBelirle("Kritik veri eksik, işlem yapılamıyor.");
+            fieldValidator.showMessages();
+            forceFieldUpdate();
+            return;
+        }
+
+        try {
+            const uretilenKimlik = await vaultIdOlustur(hesapKullaniciAdi, reduxSifre, VAULT_SALT);
+
+            if (uretilenKimlik !== kullanici.kullaniciKimlik) {
+                kimlikEslesmeHatasiBelirle("Girilen kullanıcı adı mevcut kimlikle eşleşmiyor.");
+                fieldValidator.showMessages();
+                forceFieldUpdate();
+                return;
+            }
+
+            const yeniKullaniciKimlik = await vaultIdOlustur(hesapKullaniciAdi, password, VAULT_SALT);
+
+            const sha512Hash = await sha512(password);
+            const yeniSifreBcryptHash = await bcryptHash(sha512Hash);
+
+            const yeniAnahtar = await deriveAesKey(password, VAULT_SALT);
+
+            const yeniSifrelenmisListeDto: SifreGuncelleHariciSifreDTO[] = await Promise.all(
+                hariciSifreDesifreListesi.map(async (item: HariciSifreDesifre): Promise<SifreGuncelleHariciSifreDTO> => {
+                    const iv = generateIV();
+                    const ivBase64 = uint8ArrayToBase64(iv);
+                    const dataString = JSON.stringify(item.data);
+                    const metadataString = JSON.stringify(item.metadata);
+
+                    const encryptedData = await encryptWithAES(yeniAnahtar, dataString, iv);
+                    const encryptedMetadata = await encryptWithAES(yeniAnahtar, metadataString, iv);
+
+                    return {
+                        eskiId: item.id,
+                        id: crypto.randomUUID(),
+                        encryptedData: encryptedData,
+                        encryptedMetadata: encryptedMetadata,
+                        aesIV: ivBase64
+                    };
+                })
+            );
+
+            const requestDto: SifreGuncelleRequestDTO = {
+                yeniKullaniciKimlik: yeniKullaniciKimlik,
+                yeniSifreHash: sha512Hash,
+                yeniHariciSifreList: yeniSifrelenmisListeDto
+            };
+
+            const response: JwtResponseDTO = await KullaniciApi.sifreGuncelle(requestDto);
+
+            dispatch(kullaniciBelirle({
+                ...kullanici,
+                kullaniciKimlik: yeniKullaniciKimlik,
+                sifreHash: yeniSifreBcryptHash,
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken
+            }));
+            dispatch(sifreBelirle(password));
+
+            console.log("Şifre başarıyla değiştirildi (API & Client).");
+            handlePasswordChange('');
+            handlePasswordConfirmationChange('');
+            fieldValidator.hideMessages();
+            passwordValidator.hideMessages();
+
+        } catch (error: any) {
+            console.error("Şifre değiştirme sırasında API veya istemci hatası:", error);
+            const errorMessage = error?.response?.data?.message || "Şifre değiştirilirken bir hata oluştu.";
+            kimlikEslesmeHatasiBelirle(errorMessage);
+            fieldValidator.showMessages();
+            forceFieldUpdate();
+        }
     };
 
     return (
@@ -72,20 +164,16 @@ const HesapPaneli = () => {
                 <div className="p-field">
                     <span className="p-float-label">
                         <InputText
-                            id="hesapKullaniciAdi" // Changed id
-                            value={hesapKullaniciAdi} // Use state value
-                            onChange={(e) => hesapKullaniciAdiDegistir(e.target.value)} // Update state
-                            // Use usernameValidator for className
-                            // Access fieldValid via usernameValidator
-                            className={classNames("w-full", { 'p-invalid': usernameValidator.messagesShown && !usernameValidator.fieldValid('hesapKullaniciAdi') })}
+                            id="hesapKullaniciAdi"
+                            value={hesapKullaniciAdi}
+                            onChange={(e) => hesapKullaniciAdiDegistir(e.target.value)}
+                            className={classNames("w-full", { 'p-invalid': fieldValidator.messagesShown && !fieldValidator.fieldValid('hesapKullaniciAdi') })}
                             aria-describedby="hesapKullaniciAdi-mesaj"
                         />
                         <label htmlFor="hesapKullaniciAdi">Kullanıcı Adı</label>
                     </span>
-                    {/* Validation message for username */}
                     <small id="hesapKullaniciAdi-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
-                         {/* Access message via usernameValidator */}
-                        {usernameValidator.message('hesapKullaniciAdi', hesapKullaniciAdi)}
+                        {fieldValidator.message('hesapKullaniciAdi', hesapKullaniciAdi) || kimlikEslesmeHatasi}
                     </small>
                 </div>
 
@@ -97,9 +185,8 @@ const HesapPaneli = () => {
                                 <InputText
                                     id="yeniSifre"
                                     type={sifreGoster ? 'text' : 'password'}
-                                    value={password} 
-                                    onChange={(e) => handlePasswordChange(e.target.value)} 
-                                    // Use passwordValidator for className
+                                    value={password}
+                                    onChange={(e) => handlePasswordChange(e.target.value)}
                                     className={classNames('w-full', { 'p-invalid': passwordValidator.messagesShown && !passwordValidator.fieldValid('password') })}
                                     placeholder="Yeni Şifre"
                                     aria-describedby="yeniSifre-mesaj"
@@ -111,7 +198,6 @@ const HesapPaneli = () => {
                         <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-secondary p-button-outlined" onClick={() => sifreGosterDegistir(!sifreGoster)} />
                     </div>
                     <small id="yeniSifre-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
-                        {/* Use passwordValidator */}
                         {passwordValidator.message('password', password)}
                     </small>
                 </div>
@@ -123,9 +209,8 @@ const HesapPaneli = () => {
                             <InputText
                                 id="yeniSifreTekrar"
                                 type={sifreTekrarGoster ? 'text' : 'password'}
-                                value={passwordConfirmation} 
-                                onChange={(e) => handlePasswordConfirmationChange(e.target.value)} 
-                                // Use passwordValidator for className
+                                value={passwordConfirmation}
+                                onChange={(e) => handlePasswordConfirmationChange(e.target.value)}
                                 className={classNames('w-full', { 'p-invalid': passwordValidator.messagesShown && !passwordValidator.fieldValid('passwordConfirmation') })}
                                 placeholder="Yeni Şifre Tekrar"
                                 aria-describedby="yeniSifreTekrar-mesaj"
@@ -135,7 +220,6 @@ const HesapPaneli = () => {
                          <Button type="button" icon={"pi " + (sifreTekrarGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-secondary p-button-outlined" onClick={() => sifreTekrarGosterDegistir(!sifreTekrarGoster)} />
                     </div>
                      <small id="yeniSifreTekrar-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
-                         {/* Use passwordValidator */}
                         {passwordValidator.message('passwordConfirmation', passwordConfirmation)}
                      </small>
                 </div>

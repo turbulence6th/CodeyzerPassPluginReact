@@ -1,4 +1,4 @@
-import { JwtResponseDTO, KullaniciLoginRequest, KullaniciOlusturRequestDTO, TokenRefreshRequestDTO } from "../types/KullaniciDTO";
+import { JwtResponseDTO, KullaniciLoginRequest, KullaniciOlusturRequestDTO, TokenRefreshRequestDTO, SifreGuncelleRequestDTO } from "../types/KullaniciDTO";
 import { SunucuApi } from "./SunucuApi";
 
 export class KullaniciApi {
@@ -14,5 +14,9 @@ export class KullaniciApi {
 
     static async refreshToken(request: TokenRefreshRequestDTO): Promise<JwtResponseDTO> {
         return await SunucuApi.post(`${this.BASE_URL}/refresh`, request);
+    }
+
+    static async sifreGuncelle(request: SifreGuncelleRequestDTO): Promise<JwtResponseDTO> {
+        return await SunucuApi.put(`${this.BASE_URL}/sifre-guncelle`, request);
     }
 } 

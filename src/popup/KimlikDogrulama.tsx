@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 import { AygitYoneticiKullan, RootState, useAppDispatch } from '..';
 import { sifreBelirle, sifreGuncelDurumBelirle, urlBelirle, kullaniciBelirle } from '../store/CodeyzerReducer';
 import { classNames } from 'primereact/utils';
@@ -10,8 +8,7 @@ import { KullaniciApi } from '../services/KullaniciApi';
 import { TabView, TabPanel } from 'primereact/tabview';
 import OturumAcFormu from './OturumAcFormu';
 import KayitOlFormu from './KayitOlFormu';
-
-const VAULT_SALT = "MIe8zZCjXgOe0QG5mJ0zRmYdjN7UnbACVjCkU7oPfJ0=";
+import { VAULT_SALT } from '../constants/Constants';
 
 const KimlikDogrulama = () => {
     
