@@ -1,5 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
-import AndroidPaketSecenek from '../ortak/AndroidPaketSecenek';
+import AndroidPaketSecenek from '../types/AndroidPaketSecenek';
 
 interface CodeyzerAutofillPlugin {
     sifreListesiGuncelle: () => Promise<void>

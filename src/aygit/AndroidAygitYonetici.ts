@@ -1,10 +1,10 @@
 import AygitYonetici from "./AygitYonetici";
-import PlatformTipi from "../ortak/PlatformTipi";
+import PlatformTipi from "../types/PlatformTipi";
 import { Clipboard } from '@capacitor/clipboard';
 import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
 import CodeyzerAutofillPlugin from "./CodeyzerAutofillPlugin";
-import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
+import AndroidPaketSecenek from "../types/AndroidPaketSecenek";
 
 class AndroidAygitYonetici extends AygitYonetici {
 

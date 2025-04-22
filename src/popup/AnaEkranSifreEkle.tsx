@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
-import { deriveAesKey, encryptWithAES, generateIV, uint8ArrayToBase64 } from "../ortak/CryptoUtil";
+import { deriveAesKey, encryptWithAES, generateIV, uint8ArrayToBase64 } from "../utils/CryptoUtil";
 import { InputText } from 'primereact/inputtext';
 import { useSelector } from "react-redux";
 import { AygitYoneticiKullan, RootState, useAppDispatch } from "..";
 import { Button } from "primereact/button";
-import { aktifAnaEkranTabBelirle, seciliHariciSifreKimlikBelirle, sifreGuncelDurumBelirle } from "../ortak/CodeyzerReducer";
+import { aktifAnaEkranTabBelirle, seciliHariciSifreKimlikBelirle, sifreGuncelDurumBelirle } from "../store/CodeyzerReducer";
 import AnaEkranTabEnum from "./AnaEkranTabEnum";
 import { useValidator } from "@validator.tool/hook";
 import { classNames } from "primereact/utils";
-import { useTranslation } from "react-i18next";
 import { Dropdown } from "primereact/dropdown";
-import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
-import PlatformTipi from "../ortak/PlatformTipi";
-import Yukleniyor from "../ortak/Yukleniyor";
-import { HariciSifreHariciSifreData, HariciSifreMetadata } from "../ortak/HariciSifreDTO";
-import { HariciSifreApi } from "../ortak/HariciSifreApi";
+import AndroidPaketSecenek from "../types/AndroidPaketSecenek";
+import PlatformTipi from "../types/PlatformTipi";
+import Yukleniyor from "../components/Yukleniyor";
+import { HariciSifreHariciSifreData, HariciSifreMetadata } from "../types/HariciSifreDTO";
+import { HariciSifreApi } from "../services/HariciSifreApi";
 
 interface HariciSifreEkleForm {
     url: string;
@@ -42,7 +41,6 @@ const AnaEkranSifreEkle = () => {
     const aygitYonetici = AygitYoneticiKullan();
     const [androidPaketSecenekleri, androidPaketSecenekleriDegistir] = useState<AndroidPaketSecenek[]>([]);
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
 
     useEffect(() => {
         const seciliHariciSifreDesifre = hariciSifreDesifreListesi.find(hsd => hsd.id === seciliHariciSifreKimlik)
@@ -151,9 +149,9 @@ const AnaEkranSifreEkle = () => {
         dispatch(aktifAnaEkranTabBelirle(AnaEkranTabEnum.SIFRELER));
     };
 
-    const formuSifirla = () => {
+    const vazgecTiklandi = () => {
+        dispatch(aktifAnaEkranTabBelirle(AnaEkranTabEnum.SIFRELER));
         dispatch(seciliHariciSifreKimlikBelirle(''));
-        hariciSifreEkleFormDegistir(VARSAYILAN_HARICI_SIFRE);
         validator.hideMessages();
         forceUpdate();
     };
@@ -163,7 +161,7 @@ const AnaEkranSifreEkle = () => {
             <form 
                 onSubmit={handleSubmit(sifreEkleGuncelle)}
             >
-                <div className="field h-4rem">
+                <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
                         <span className="p-float-label">
                             <InputText 
@@ -176,9 +174,16 @@ const AnaEkranSifreEkle = () => {
                             />
                             <label htmlFor="url">Url</label>
                         </span>
+                        <small id="url-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
+                        {
+                            validator.message('url', hariciSifreEkleForm.url, {
+                                validate: (val: string) => !val ? 'Url gerekli' : ''
+                            }) 
+                        }
+                        </small>
                     </Yukleniyor>
                 </div>
-                <div className="field h-4rem">
+                <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
                         <span className="p-float-label">
                             <InputText 
@@ -188,9 +193,9 @@ const AnaEkranSifreEkle = () => {
                                 className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('androidPaket')})} 
                                 aria-describedby="android-paket-mesaj"
                             />
-                            <label htmlFor="androidPaket">{t('anaEkranSifreEkle.androidPaket.placeholder')}</label>
+                            <label htmlFor="androidPaket">Android Paket Adı</label>
                         </span>
-                        <small id="android-paket-mesaj" className='hata'>
+                        <small id="android-paket-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
                         {
                             validator.message('androidPaket', hariciSifreEkleForm.android, {
                                 validate: (val: string) => val && !/^(\w+\.)*\w+$/.test(val) ? 
@@ -201,7 +206,7 @@ const AnaEkranSifreEkle = () => {
                     </Yukleniyor>
                 </div>
                 {
-                aygitYonetici?.platformTipi() === PlatformTipi.ANDROID && <div className="field h-4rem">
+                aygitYonetici?.platformTipi() === PlatformTipi.ANDROID && <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
                         <Dropdown 
                             value={androidPaketSecenekleri.some(androidPaketSecenek => androidPaketSecenek.value === hariciSifreEkleForm.android) ? hariciSifreEkleForm.android : undefined} 
@@ -215,7 +220,7 @@ const AnaEkranSifreEkle = () => {
                     </Yukleniyor>
                 </div>
                 }
-                <div className="field h-4rem">
+                <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
                         <span className="p-float-label">
                             <InputText 
@@ -226,18 +231,18 @@ const AnaEkranSifreEkle = () => {
                                 inputMode='email'
                                 aria-describedby="kullanici-adi-mesaj"
                             />
-                            <label htmlFor="kullaniciAdi">{t('anaEkranSifreEkle.kullaniciAdi.label')}</label>
+                            <label htmlFor="kullaniciAdi">Kullanıcı Adı</label>
                         </span>
-                        <small id="kullanici-adi-mesaj" className='hata'>
+                        <small id="kullanici-adi-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
                         {
                             validator.message('kullaniciAdi', hariciSifreEkleForm.kullaniciAdi, {
-                                validate: (val: string) => !val ? t('anaEkranSifreEkle.kullaniciAdi.hata.gerekli') : ''
+                                validate: (val: string) => !val ? 'Kullanıcı adı gerekli' : ''
                             }) 
                         }
                         </small>
                     </Yukleniyor>
                 </div>
-                <div className="field h-4rem">
+                <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
                         <div className="p-inputgroup">
                             <span className="p-float-label">
@@ -249,29 +254,41 @@ const AnaEkranSifreEkle = () => {
                                     className={classNames('w-full', {'p-invalid': validator.messagesShown && !validator.fieldValid('sifre')})} 
                                     aria-describedby="sifre-mesaj"
                                 />
-                                <label htmlFor="sifre">{t('anaEkranSifreEkle.sifre.label')}</label>
+                                <label htmlFor="sifre">Şifre</label>
                             </span>
-                            <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
+                            <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-secondary p-button-outlined" onClick={() => sifreGosterDegistir(!sifreGoster)} />
                         </div>
-                        <small id="sifre-mesaj" className='hata'>
+                        <small id="sifre-mesaj" className='p-error' style={{ minHeight: '1.2em', display: 'block' }}>
                         {
                             validator.message('sifre', hariciSifreEkleForm.sifre, {
-                                validate: (val: string) => !val ? t('anaEkranSifreEkle.sifre.hata.gerekli') : ''
+                                validate: (val: string) => !val ? 'Şifre gerekli' : ''
                             }) 
                         }
                         </small>
                     </Yukleniyor>
                 </div>
-                <div className="field">
+                <div className="p-field mb-3">
                     <Yukleniyor tip="engelle">
-                        <Button type="button" label={seciliHariciSifreKimlik ? t('anaEkranSifreEkle.sifreEkle.guncelle.label') : t('anaEkranSifreEkle.sifreEkle.ekle.label')} className='w-full' onClick={sifreEkleGuncelle} />
+                        <Button 
+                            type='button'
+                            label={seciliHariciSifreKimlik ? 'Güncelle' : 'Ekle'}
+                            className='w-full p-button-primary' 
+                            onClick={sifreEkleGuncelle}
+                        />
                     </Yukleniyor>
                 </div>
-                <div className="field">
-                    <Yukleniyor tip="engelle">
-                        <Button type="button" label={t('anaEkranSifreEkle.sifirla.label')} className='w-full' onClick={formuSifirla} />
-                    </Yukleniyor>
-                </div>
+                {seciliHariciSifreKimlik && (
+                    <div className="p-field">
+                        <Yukleniyor tip="engelle">
+                            <Button 
+                                type='button' 
+                                label='Vazgeç'
+                                className='w-full p-button-secondary' 
+                                onClick={vazgecTiklandi}
+                            />
+                        </Yukleniyor>
+                    </div>
+                )}
             </form>
         </div>
 

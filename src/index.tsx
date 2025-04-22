@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import "primereact/resources/themes/md-dark-indigo/theme.css";     
-import "./ortak/theme.css";
+import "./styles/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeflex/primeflex.css"; 
 import 'primeicons/primeicons.css';
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { Provider, useDispatch } from 'react-redux';
-import { codeyzerDepoReducer, codeyzerHafizaReducer } from './ortak/CodeyzerReducer';
+import { codeyzerDepoReducer, codeyzerHafizaReducer } from './store/CodeyzerReducer';
 import { 
   persistReducer,
   persistStore,
@@ -21,7 +21,6 @@ import {
 } from 'redux-persist';
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { PersistGate } from 'redux-persist/integration/react';
-import './ortak/i18n';
 import AygitYonetici from './aygit/AygitYonetici';
 import { createStateSyncMiddleware, initStateWithPrevTab } from 'redux-state-sync';
 

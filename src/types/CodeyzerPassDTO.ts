@@ -3,4 +3,4 @@ export interface CodeyzerPassErrorResponseDTO {
     path: string;
     status: number;
     timestamp: Date;
-}
+} 

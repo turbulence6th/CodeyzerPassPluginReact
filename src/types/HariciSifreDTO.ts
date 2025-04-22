@@ -33,5 +33,4 @@ export interface HariciSifreHariciSifreData {
 export interface HariciSifreMetadata {
     url: string;
     android: string;
-}
-    
+} 

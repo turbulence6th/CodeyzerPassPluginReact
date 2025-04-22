@@ -1,6 +1,6 @@
 import AygitYonetici from "./AygitYonetici";
-import PlatformTipi from "../ortak/PlatformTipi";
-import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
+import PlatformTipi from "../types/PlatformTipi";
+import AndroidPaketSecenek from "../types/AndroidPaketSecenek";
 
 class WebUygulamaAygitYonetici extends AygitYonetici {
     

@@ -21,4 +21,4 @@ export class SunucuApi {
     static async delete(path: string): Promise<void> {
         await api.delete(path);
     }
-}
+} 

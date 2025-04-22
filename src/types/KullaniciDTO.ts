@@ -22,4 +22,4 @@ export interface Kullanici {
 
 export interface TokenRefreshRequestDTO {
     refreshToken: string;
-}
+} 

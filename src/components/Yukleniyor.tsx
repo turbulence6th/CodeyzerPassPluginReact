@@ -31,4 +31,4 @@ const Yukleniyor = ({ children, height, width, tip, className }: YukleniyorProps
     );
 };
 
-export default Yukleniyor;
+export default Yukleniyor; 

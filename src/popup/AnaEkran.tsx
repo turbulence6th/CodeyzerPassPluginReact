@@ -4,7 +4,7 @@ import AnaEkranSifreEkle from './AnaEkranSifreEkle';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '..';
-import { aktifAnaEkranTabBelirle } from '../ortak/CodeyzerReducer';
+import { aktifAnaEkranTabBelirle } from '../store/CodeyzerReducer';
 import AnaEkranAyarlar from './AnaEkranAyarlar';
 import AnaEkranTabEnum from './AnaEkranTabEnum';
 

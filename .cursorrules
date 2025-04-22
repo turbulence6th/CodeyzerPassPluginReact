@@ -1,0 +1,49 @@
+# Cursor Kuralları: codeyzer-pass-react projesi
+
+# Dil ve Çerçeve
+# Projede kullanılan ana dil ve çerçeve.
+language: typescript
+framework: react
+
+# Kullanıcı Arayüzü Kütüphanesi
+# Arayüz elemanları için kullanılan ana kütüphane ve stil sistemi.
+ui_library:
+  name: primereact
+  styling: primeflex # Yardımcı sınıflar için PrimeFlex kullanılıyor.
+  # Not: className utility'si (primereact/utils) sıkça kullanılıyor.
+
+# Durum Yönetimi (State Management)
+# Bileşen ve uygulama genelindeki durum yönetimi yaklaşımları.
+state_management:
+  - name: react_hooks # useState, useEffect vb. yerel durum için.
+  - name: redux_toolkit # Global durum yönetimi için. (@reduxjs/toolkit, react-redux)
+
+# Doğrulama (Validation)
+# Form doğrulaması için kullanılan kütüphane.
+validation_library: "@validator.tool/hook"
+
+# Kodlama Stili ve Yapısı
+# Genel kodlama tercihleri ve yapısal kurallar.
+style_guide:
+  # Bileşenler genellikle fonksiyonel (React.FC) ve ayrı dosyalarda tanımlanır.
+  component_structure: functional_component_per_file
+  # Props tipleri için Interface kullanılır.
+  props_typing: interface
+  # Yerel durum yönetimi için useState tercih edilir.
+  local_state: useState
+  # Stil için PrimeFlex yardımcı sınıfları ve gerektiğinde inline stiller kullanılır.
+  styling_preference: utility_classes_and_inline
+  # Hata mesajları için layout kaymasını önlemek amacıyla min-height ile yer ayrılır.
+  error_message_layout: reserve_space_min_height
+  # Şifre görünürlüğü için InputText + Button (p-inputgroup içinde) tercih edilir.
+  password_visibility: custom_button_in_inputgroup
+  # Şifre gücü göstergesi için ayrı ProgressBar bileşeni tercih edilir.
+  password_strength: custom_progressbar_below
+
+# Yorumlar
+# Kod içindeki yorum kullanımı tercihi.
+comments: minimal # Sadece karmaşık veya belirgin olmayan mantığı açıkla.
+
+# İnsan Dili
+# Geliştirici ile iletişimde tercih edilen dil.
+human_language: tr # Türkçe 

@@ -3,4 +3,4 @@ interface AndroidPaketSecenek {
     value: string
 }
 
-export default AndroidPaketSecenek
+export default AndroidPaketSecenek 

@@ -1,5 +1,5 @@
-import AndroidPaketSecenek from "../ortak/AndroidPaketSecenek";
-import PlatformTipi from "../ortak/PlatformTipi";
+import AndroidPaketSecenek from "../types/AndroidPaketSecenek";
+import PlatformTipi from "../types/PlatformTipi";
 
 abstract class AygitYonetici {
     abstract depoyaKoy(anahtar: string, deger: string): Promise<void>

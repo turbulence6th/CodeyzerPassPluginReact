@@ -1,4 +1,4 @@
-import { HariciSifreDTO, HariciSifreSaveRequestDTO, HariciSifreUpdateRequestDTO } from "./HariciSifreDTO";
+import { HariciSifreDTO, HariciSifreSaveRequestDTO, HariciSifreUpdateRequestDTO } from "../types/HariciSifreDTO";
 import { SunucuApi } from "./SunucuApi";
 
 export class HariciSifreApi {
@@ -19,4 +19,4 @@ export class HariciSifreApi {
     static async delete(id: string): Promise<void> {
         await SunucuApi.delete(`${this.BASE_URL}/sil/${id}`);
     }
-}
+} 

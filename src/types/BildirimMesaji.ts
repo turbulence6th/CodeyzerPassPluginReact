@@ -12,4 +12,4 @@ interface BildirimMesaji {
 export {
     MesajTipi
 };
-export default BildirimMesaji;
+export default BildirimMesaji; 

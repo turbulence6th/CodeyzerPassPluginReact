@@ -13,7 +13,7 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
 
     return (
         <div>
-            <div className="field h-4rem">
+            <div className="p-field mb-3">
                 <span className="p-float-label">
                     <InputText 
                         id="url" 
@@ -26,7 +26,7 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
                     <label htmlFor="url">Url</label>
                 </span>
             </div>
-            <div className="field h-4rem">
+            <div className="p-field mb-3">
                 <span className="p-float-label">
                     <InputText 
                         id="androidPaket" 
@@ -38,7 +38,7 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
                     <label htmlFor="androidPaket">Android Paket</label>
                 </span>
             </div>
-            <div className="field h-4rem">
+            <div className="p-field mb-3">
                 <span className="p-float-label">
                     <InputText 
                         id="kullaniciAdi" 
@@ -51,7 +51,7 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
                     <label htmlFor="kullaniciAdi">Kullanıcı Adı</label>
                 </span>
             </div>
-            <div className="field h-4rem">
+            <div className="p-field mb-3">
                 <div className="p-inputgroup">
                     <span className="p-float-label">
                         <InputText 
@@ -64,7 +64,7 @@ const IceriyeAktarAyrinti = ({ hariciSifreDesifreIceriAktar }: IceriyeAktarAyrin
                         />
                         <label htmlFor="sifre">Şifre</label>
                     </span>
-                    <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-success" onClick={() => sifreGosterDegistir(!sifreGoster)} />
+                    <Button type="button" icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} className="p-button-secondary p-button-outlined" onClick={() => sifreGosterDegistir(!sifreGoster)} />
                 </div>
             </div>
         </div>

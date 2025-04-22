@@ -1,5 +1,5 @@
 import { FileUpload, FileUploadHandlerEvent } from 'primereact/fileupload';
-import { HariciSifreDTO, HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from '../ortak/HariciSifreDTO';
+import { HariciSifreDTO, HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from '../types/HariciSifreDTO';
 import { Dialog } from 'primereact/dialog';
 import { useRef, useState } from 'react';
 import { DataView } from 'primereact/dataview';
@@ -7,14 +7,13 @@ import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '..';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
-import { sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
+import { sifreGuncelDurumBelirle } from '../store/CodeyzerReducer';
 import IceriyeAktarAyrinti from './IceriyeAktarAyrinti';
 import { classNames } from 'primereact/utils';
-import { dialogGoster } from '../ortak/DialogUtil';
-import { useTranslation } from 'react-i18next';
+import { dialogGoster } from '../utils/DialogUtil';
 import { InputText } from 'primereact/inputtext';
-import { base64ToUint8Array, decryptWithAES, deriveAesKey, encryptWithAES, generateIV, uint8ArrayToBase64 } from '../ortak/CryptoUtil';
-import { HariciSifreApi } from '../ortak/HariciSifreApi';
+import { base64ToUint8Array, decryptWithAES, deriveAesKey, encryptWithAES, generateIV, uint8ArrayToBase64 } from '../utils/CryptoUtil';
+import { HariciSifreApi } from '../services/HariciSifreApi';
 
 export interface HariciSifreDesifreIceriyeAktar extends HariciSifreDesifre {
     durum: HariciSifreDesifreIceriyeAktarDurum
@@ -34,7 +33,6 @@ const IceriyeAktar = () => {
     const hariciSifreDesifreListesi = useSelector((state: RootState) => state.codeyzerHafizaReducer.hariciSifreDesifreListesi);
     const [seciliHariciSifreDesifreIceriAktarKimlik, seciliHariciSifreDesifreIceriAktarKimlikDegistir] = useState('');
     const dosyaSifreRef = useRef<HTMLInputElement>(null);
-    const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
     const dosyaSecilmesiniEleAl = async (event: FileUploadHandlerEvent) => {
@@ -47,7 +45,7 @@ const IceriyeAktar = () => {
                     const body = (
                         <InputText ref={dosyaSifreRef} className="p-inputtext-sm" type='password'/>
                     );
-                    dialogGoster(t, 'Dosyanın şifresini giriniz', body, () => {
+                    dialogGoster('Dosya Şifresi', body, () => {
                         resolve(null);
                     }, () => {
                         error();
@@ -183,23 +181,24 @@ const IceriyeAktar = () => {
         }
 
         return (
-            <div className={classNames("col-12", { hariciSifreDesifreIceriAlSecili: hsd.id === seciliHariciSifreDesifreIceriAktarKimlik})} 
-                style={{color: durum2Renk(hsd.durum), height: '75px'}} 
+            <div 
+                className={classNames("col-12 hover:surface-hover cursor-pointer", { hariciSifreDesifreIceriAlSecili: hsd.id === seciliHariciSifreDesifreIceriAktarKimlik})} 
+                style={{ height: '75px' }} 
                 onClick={() => seciliHariciSifreDesifreIceriAktarKimlikDegistir(hsd.id)}
             >
-                <div className='flex p-3 gap-3 align-items-center pl-5'>
+                <div className='flex p-3 gap-3 align-items-center pl-3'>
                     <div>
                         <img src='/images/icon_32.png' height={32} width={32}/>
                     </div>
                     <div className='flex flex-column line-height-2 flex-grow-1'>
                         <div 
-                            className='text-base text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem'
+                            className='text-base text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem text-color'
                             title={hsd.metadata.url}
                         >
                             { hsd.metadata.url }
                         </div>
                         <div 
-                            className='text-sm text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem'
+                            className='text-sm text-overflow-ellipsis white-space-nowrap overflow-hidden w-25rem text-color-secondary'
                             title={hsd.data.kullaniciAdi}
                         >
                             { hsd.data.kullaniciAdi }
@@ -261,65 +260,99 @@ const IceriyeAktar = () => {
     const diyalogKapat = () => {
         diyalogGosterDegistir(false);
         dosyaHariciSifreDesifreListDegistir([]);
-    };
-
-    const iceriAktarSifreListesi = iceriAktarSifreListesiGetir();
+        farkliOlanlariGösterDegistir(false);
+    }
 
     const hepsiniUygula = async () => {
-        for (let hsd of iceriAktarSifreListesi) {
-            await sifreDegistir(hsd);
+        const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
+        for (const hsd of iceriAktarSifreListesiGetir()) {
+            if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.AKTIF) {
+                continue;
+            }
+
+            const iv = generateIV();
+            const encryptedData = await encryptWithAES(aesKey, JSON.stringify(hsd.data), iv);
+            const encryptedMetadata = await encryptWithAES(aesKey, JSON.stringify(hsd.metadata), iv);
+            const aesIV = uint8ArrayToBase64(iv);
+            
+            if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.EKLE) {
+                await HariciSifreApi.save({
+                    id: hsd.id,
+                    encryptedData,
+                    encryptedMetadata,
+                    aesIV
+                });
+            } else if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.GUNCELLE) {
+                await HariciSifreApi.update(hsd.id, {
+                    encryptedData,
+                    encryptedMetadata,
+                    aesIV
+                });
+            } else if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.SIL) {
+                await HariciSifreApi.delete(hsd.id);
+            }
         }
+
+        dispatch(sifreGuncelDurumBelirle(false));
+        diyalogKapat();
     };
 
-    const seciliHariciSifreDesifreIceriAktar = iceriAktarSifreListesi.find(hsd => hsd.id === seciliHariciSifreDesifreIceriAktarKimlik);
+    const dialogFooter = (
+        <div>
+            <Button label="Hepsini Uygula" icon="pi pi-check" onClick={hepsiniUygula} className="p-button-primary mr-2" />
+            <Button label="Kapat" icon="pi pi-times" onClick={diyalogKapat} className="p-button-text" />
+        </div>
+    );
+
+    const seciliHariciSifreDesifreIceriAktar = iceriAktarSifreListesiGetir().find(hsd => hsd.id === seciliHariciSifreDesifreIceriAktarKimlik);
 
     return (
         <>
-            <h3>İçeriye Aktar</h3>
-            <FileUpload 
-                mode="basic" 
-                accept="*/*" 
-                maxFileSize={1000000} 
-                uploadHandler={dosyaSecilmesiniEleAl} 
-                auto 
-                chooseLabel="Şifre dosyası ekle" 
-                customUpload
-            />
-            <Dialog header="İçeriye aktar" visible={diyalogGoster} style={{ width: '60vw', height: '35vw' }} onHide={diyalogKapat}>
-                <div className='flex flex-row gap-5'>
-                    <div className='flex flex-column'>
-                        <div className="flex align-items-center">
-                            <Button 
-                                type="button" 
-                                label="Hepsini uygula" 
-                                severity="warning"
-                                onClick={hepsiniUygula} 
-                            />
+            <h3 className="mb-3">İçeriye Aktar</h3>
+            <div className='card p-3'> 
+                <FileUpload 
+                    mode="basic" 
+                    name="sifreler[]" 
+                    url="/upload" 
+                    accept=".json" 
+                    maxFileSize={1000000} 
+                    customUpload 
+                    uploadHandler={dosyaSecilmesiniEleAl}
+                    chooseLabel='Dosya Seç'
+                    auto 
+                />
+                <Dialog 
+                    header='Şifreleri Karşılaştır ve İçeri Aktar'
+                    visible={diyalogGoster} 
+                    style={{ width: '60vw', maxHeight: '70vh' }}
+                    onHide={() => diyalogKapat()} 
+                    footer={dialogFooter}
+                >
+                    <div className="p-field-checkbox flex align-items-center justify-content-end mb-2">
+                        <label htmlFor="farkliOlanlarGoster" className='mr-2'>Sadece farklı olanları göster</label>
+                        <Checkbox inputId="farkliOlanlarGoster" onChange={e => farkliOlanlariGösterDegistir(e.checked!)} checked={farkliOlanlariGöster}></Checkbox>
+                    </div>
+
+                    <div className='flex flex-row gap-5'>
+                        <div className='flex flex-column flex-grow-1'> 
+                            <div style={{ minHeight: '375px' }}> 
+                                <DataView 
+                                    value={iceriAktarSifreListesiGetir()} 
+                                    itemTemplate={itemTemplate} 
+                                    rows={5} 
+                                    paginator 
+                                    emptyMessage='Karşılaştırılacak veri bulunamadı.'
+                                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport" 
+                                    currentPageReportTemplate='{first}-{last} / {totalRecords}'
+                                />
+                            </div>
                         </div>
-                        <div className="flex align-items-center mt-3">
-                            <Checkbox 
-                                inputId="farkliOlaniGoster" 
-                                onChange={e => farkliOlanlariGösterDegistir(e.checked!)} 
-                                checked={farkliOlanlariGöster} 
-                            />
-                            <label htmlFor="farkliOlaniGoster" className="ml-2">Sadace farklı şifreleri göster</label>
-                        </div>
-                        <div style={{width: '1000px', height: '500px'}}>
-                            <DataView 
-                                value={iceriAktarSifreListesi} 
-                                itemTemplate={itemTemplate}
-                                paginator 
-                                rows={5} 
-                                className='mt-3'
-                                emptyMessage='Şifre bulunamadı'
-                            />
+                        <div style={{ overflowY: 'auto', maxHeight: '55vh', width: '25rem', flexShrink: 0, paddingTop: '1rem' }}> 
+                             <IceriyeAktarAyrinti hariciSifreDesifreIceriAktar={seciliHariciSifreDesifreIceriAktar} />
                         </div>
                     </div>
-                    <div className='mt-5' style={{width: '1000px'}}>
-                        <IceriyeAktarAyrinti hariciSifreDesifreIceriAktar={seciliHariciSifreDesifreIceriAktar} />
-                    </div>
-                </div>
-            </Dialog>
+                </Dialog>
+            </div>
         </>
     );
     

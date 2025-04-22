@@ -1,0 +1,90 @@
+body {
+    background-color: black;
+    padding: 0px;
+}
+
+input ~ label {
+    border-radius: 4px;
+}
+
+li.p-unselectable-text {
+    flex: 1;
+}
+
+.p-tabview-title {
+    margin: auto !important;
+}
+
+.hata {
+    color: var(--red-500);
+}
+
+.p-dropdown-panel {
+    max-width: 80vw !important;
+}
+
+.p-dropdown-item {
+    text-overflow: ellipsis !important;
+}
+
+.p-dialog {
+    max-width: 90vw !important;
+}
+
+.hariciSifreDesifreIceriAlSecili {
+    background-color: #111111;
+} 
+
+/* Kasa.tsx DataTable - Pure CSS Stacked View */
+@media screen and (max-width: 768px) { /* Breakpoint'i buradan ayarlayın */
+
+    /* Tablo başlığını (thead) gizle */
+    .p-datatable .p-datatable-thead > tr > th {
+        display: none;
+    }
+
+    /* Satırları (tr) blok element yap */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem; /* Kartlar arası boşluk */
+        border: 1px solid var(--surface-d); /* Kart kenarlığı */
+        border-radius: var(--border-radius); /* Köşe yuvarlatma */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* Hafif gölge */
+    }
+
+    /* Hücreleri (td) blok element yap ve stilleri ayarla */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td {
+        display: block;
+        width: 100%;
+        padding: 0.5rem; /* Basit padding */
+        text-align: left; /* Hizalamayı sola sıfırla */
+        box-sizing: border-box;
+    }
+
+     /* Son hücrenin alt çizgisini kaldır */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:last-child {
+         border-bottom: 0;
+     }
+
+    /* Başlıkları ::before ile ekle */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td::before {
+        content: attr(data-col); /* Başlığı buradan alacağız (aşağıya bak) */
+        float: left;
+        font-weight: 600; /* Yarı kalın */
+        margin-right: 0.5rem; /* Başlık ve değer arası boşluk */
+        white-space: nowrap; /* Başlıkların kaymasını engelle */
+    }
+
+    /* Her hücreye ilgili başlığı data-col olarak ekle */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:nth-child(1)::before { content: "Platform"; }
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:nth-child(2)::before { content: "Android"; }
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:nth-child(3)::before { content: "Kullanıcı adı"; }
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:nth-child(4)::before { content: "Şifre"; }
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td:nth-child(5)::before { content: "Eylemler"; }
+
+    /* Mobil görünümde td içindeki asıl içeriğe üst boşluk ver */
+    .p-datatable .p-datatable-tbody > tr.kasa-data-row > td > * {
+        margin-top: 0.5rem; /* Başlık ile içerik arasına boşluk ekle */
+    }
+}

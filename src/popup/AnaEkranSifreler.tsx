@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { alanAdiGetir } from '../ortak/AlanAdiUtil';
+import { alanAdiGetir } from '../utils/AlanAdiUtil';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { useSelector } from 'react-redux';
 import { RootState, AygitYoneticiKullan, useAppDispatch } from '..';
-import { aktifAnaEkranTabBelirle, mesajBelirle, seciliHariciSifreKimlikBelirle, sifreGuncelDurumBelirle } from '../ortak/CodeyzerReducer';
-import AnaEkranTabEnum from './AnaEkranTabEnum';
-import { MesajTipi } from '../ortak/BildirimMesaji';
-import { useTranslation } from 'react-i18next';
-import PlatformTipi from '../ortak/PlatformTipi';
-import { dialogGoster } from '../ortak/DialogUtil';
-import Yukleniyor from '../ortak/Yukleniyor';
-import { HariciSifreApi } from '../ortak/HariciSifreApi';
+import { mesajBelirle, sifreGuncelDurumBelirle } from '../store/CodeyzerReducer';
+import { MesajTipi } from '../types/BildirimMesaji';
+import PlatformTipi from '../types/PlatformTipi';
+import { HariciSifreDesifre } from '../types/HariciSifreDTO';
+import Yukleniyor from '../components/Yukleniyor';
 
 const AnaEkranSifreler = () => {
 
@@ -24,7 +21,6 @@ const AnaEkranSifreler = () => {
     const [seciliHariciSifreKimlik, seciliHariciSifreKimlikDegistir] = useState<string>();
     const [sifreGoster, sifreGosterDegistir] = useState<boolean>(false);
     const dispatch = useAppDispatch();
-    const { t } = useTranslation();
 
     useEffect(() => {
         const platformTipi = aygitYonetici?.platformTipi();
@@ -38,7 +34,7 @@ const AnaEkranSifreler = () => {
             const aygitPlatform = await aygitYonetici?.platformGetir();
             if (aygitPlatform?.platform) {
                 const sekmedekiPlatform = alanAdiGetir(aygitPlatform.platform);
-                const platformHarisiSifreDesifre = hariciSifreDesifreListesi.find(hsd => alanAdiGetir(hsd.metadata.url) === sekmedekiPlatform);
+                const platformHarisiSifreDesifre = hariciSifreDesifreListesi.find((hsd: HariciSifreDesifre) => alanAdiGetir(hsd.metadata.url) === sekmedekiPlatform);
                 if (platformHarisiSifreDesifre) {
                     seciliPlatformDegistir(sekmedekiPlatform);
                     seciliHariciSifreKimlikDegistir(platformHarisiSifreDesifre.id);
@@ -50,31 +46,33 @@ const AnaEkranSifreler = () => {
     const platformSecenekleriGetir = () => {
         let alanAdiSet;
         if (seciliCihaz === 'web') {
-            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.metadata.url).map(hsd => alanAdiGetir(hsd.metadata.url)));
+            alanAdiSet = new Set(hariciSifreDesifreListesi.filter((hsd: HariciSifreDesifre) => hsd.metadata.url).map((hsd: HariciSifreDesifre) => alanAdiGetir(hsd.metadata.url)));
         } else if (seciliCihaz === 'android') {
-            alanAdiSet = new Set(hariciSifreDesifreListesi.filter(hsd => hsd.metadata.android).map(hsd => hsd.metadata.android));
+            alanAdiSet = new Set(hariciSifreDesifreListesi.filter((hsd: HariciSifreDesifre) => hsd.metadata.android).map((hsd: HariciSifreDesifre) => hsd.metadata.android!));
         } else {
             alanAdiSet = new Set<string>();
         }
 
-        return [...alanAdiSet]
-        .map(alanAdi => ({
+        const options: { label: string, value: string }[] = ([...alanAdiSet] as string[])
+        .map((alanAdi) => ({
             label: alanAdi,
             value: alanAdi
-        }))
-        .sort((x, y) => x.label.localeCompare(y.label));
+        }));
+        
+        return options.sort((x, y) => x.label.localeCompare(y.label));
     };
 
     const kullaniciAdiSecenekleriGetir = () => {
         return hariciSifreDesifreListesi
-        .filter(hsd => {
+        .filter((hsd: HariciSifreDesifre) => {
             if (seciliCihaz === 'web') {
                 return alanAdiGetir(hsd.metadata.url) === seciliPlatform;
             } else if (seciliCihaz === 'android') {
                 return hsd.metadata.android === seciliPlatform;
             }
+            return false;
         })
-        .map(hsd => ({
+        .map((hsd: HariciSifreDesifre) => ({
             label: hsd.data.kullaniciAdi,
             value: hsd.data.kullaniciAdi
         }));
@@ -82,7 +80,7 @@ const AnaEkranSifreler = () => {
 
     const seciliHariciSifreGetir = () => {
         return hariciSifreDesifreListesi
-        .find(hsd => hsd.id === seciliHariciSifreKimlik);
+        .find((hsd: HariciSifreDesifre) => hsd.id === seciliHariciSifreKimlik);
     };
 
     const cihazDegisti = (deger: string) => {
@@ -98,7 +96,7 @@ const AnaEkranSifreler = () => {
 
     const kullanciAdiDegisti = (value: string) => {
         const hariciSifreDesifre = hariciSifreDesifreListesi
-            .filter(hsd => {
+            .filter((hsd: HariciSifreDesifre) => {
                 if (seciliCihaz === 'web') {
                     return alanAdiGetir(hsd.metadata.url) === seciliPlatform;
                 } else if (seciliCihaz === 'android') {
@@ -107,26 +105,13 @@ const AnaEkranSifreler = () => {
 
                 return false;
             })
-            .find(hsd => hsd.data.kullaniciAdi === value);
+            .find((hsd: HariciSifreDesifre) => hsd.data.kullaniciAdi === value);
         seciliHariciSifreKimlikDegistir(hariciSifreDesifre?.id);
     }
 
     const doldurTiklandi = () => {
         aygitYonetici?.sifreDoldur(seciliHariciSifre?.data.kullaniciAdi!, seciliHariciSifre?.data.sifre!);
     };
-
-    const guncelleTiklandi = (hariciSifreKimlik: string) => {
-        dispatch(seciliHariciSifreKimlikBelirle(hariciSifreKimlik));
-        dispatch(aktifAnaEkranTabBelirle(AnaEkranTabEnum.SIFRE_EKLE));
-    };
-
-    const silTiklandi = () => {
-        dialogGoster(t, t('codeyzer.genel.uyari'), t('anaEkranSifreler.sil.click'), 
-            async () => {
-                await HariciSifreApi.delete(seciliHariciSifre!.id);
-                dispatch(sifreGuncelDurumBelirle(false));
-            });
-    }
 
     const yenileTiklandi = () => {
         dispatch(sifreGuncelDurumBelirle(false));
@@ -136,7 +121,7 @@ const AnaEkranSifreler = () => {
         await aygitYonetici?.panoyaKopyala(seciliHariciSifre?.data.sifre!);
         dispatch(mesajBelirle({
             tip: MesajTipi.BILGI,
-            icerik: t('anaEkranSifreler.kopyala.click')
+            icerik: 'Şifre panoya kopyalandı.'
         }));
     };
 
@@ -144,7 +129,7 @@ const AnaEkranSifreler = () => {
 
     return (
         <div>
-           <div className="field">
+           <div className="p-field mb-3">
                 <Yukleniyor height='3.3rem' tip='iskelet'>
                     <Dropdown 
                         value={seciliCihaz}
@@ -156,13 +141,13 @@ const AnaEkranSifreler = () => {
                     />
                 </Yukleniyor>
             </div>
-            <div className="field">
+            <div className="p-field mb-3">
                 <Yukleniyor height='3.3rem' tip='iskelet'>
                     <Dropdown 
                         value={seciliPlatform} 
                         onChange={(e) => platformDegisti(e.value)} 
                         options={platformSecenekleriGetir()} 
-                        placeholder={t('anaEkranSifreler.platformSelect.seciniz')}
+                        placeholder='Platform seçiniz'
                         className="w-full h-full" 
                         filter
                         filterInputAutoFocus={false}
@@ -171,20 +156,20 @@ const AnaEkranSifreler = () => {
                     />
                 </Yukleniyor>
             </div>
-            <div className="field">
+            <div className="p-field mb-3">
                 <Yukleniyor height='3.4rem' tip='iskelet'>
                     <Dropdown 
                         value={seciliHariciSifre?.data.kullaniciAdi} 
                         onChange={(e) => kullanciAdiDegisti(e.value)} 
                         options={kullaniciAdiSecenekleriGetir()} 
-                        placeholder={t('anaEkranSifreler.sifreSelect.bos')} 
+                        placeholder='Kullanıcı adı seçiniz' 
                         className="w-full h-full" 
                         disabled={!seciliPlatform}
                         showClear
                     />
                 </Yukleniyor>
             </div>
-            <div className="field">
+            <div className="p-field mb-3">
                 <Yukleniyor height='3.4rem' tip='iskelet'>
                     <div className='p-inputgroup h-full'>
                         <InputText 
@@ -192,62 +177,47 @@ const AnaEkranSifreler = () => {
                             type={sifreGoster ? 'text' : 'password'} 
                             value={seciliHariciSifre?.data.sifre || ''} 
                             className='w-full' 
-                            placeholder={t('anaEkranSifreler.sifreSelectSifre.bos')}
+                            placeholder='Şifre'
                             disabled
                         />
                         <Button 
+                            type="button"
                             icon={"pi pi-clone"} 
-                            className="p-button-success" 
+                            className="p-button-secondary p-button-outlined" 
                             onClick={kopyalaTiklandi} 
                             disabled={!seciliHariciSifreKimlik}
-                            title={t('anaEkranSifreler.kopyala.title')}
+                            title='Şifreyi Panoya Kopyala'
                         />
                         <Button 
+                            type="button"
                             icon={"pi " + (sifreGoster ? "pi-eye" : "pi-eye-slash")} 
-                            className="p-button-success" 
+                            className="p-button-secondary p-button-outlined" 
                             onClick={() => sifreGosterDegistir(!sifreGoster)} 
                             disabled={!seciliHariciSifreKimlik}
-                            title={t('anaEkranSifreler.sifreSelectGoster.title')}
+                            title='Şifreyi Göster'
                         />
                     </div>
                 </Yukleniyor>
+                <small className="block mt-1 text-xs text-color-secondary">
+                    Şifreyi düzenlemek için Ayarlar -&gt; Gelişmiş Ayarlar menüsündeki Kasa sekmesini kullanın.
+                </small>
             </div>
             { 
             aygitYonetici?.platformTipi() === PlatformTipi.CHROME && 
-            <div className="field">
+            <div className="p-field mb-3">
                 <Yukleniyor tip='engelle'>
                     <Button 
-                        label={t('anaEkranSifreler.doldur.label')}
-                        className='w-full' 
+                        type="button"
+                        label='Şifreyi Doldur'
+                        className='w-full p-button-primary' 
                         onClick={doldurTiklandi} 
                         disabled={!seciliHariciSifreKimlik}
                     />
                 </Yukleniyor>
             </div>
             }
-            <div className="formgrid grid">
-                <div className="field col">
-                    <Yukleniyor tip='engelle'>
-                        <Button 
-                            label={t('anaEkranSifreler.guncelle.label')}
-                            className='w-full h-full' 
-                            onClick={() => guncelleTiklandi(seciliHariciSifreKimlik!)}
-                            disabled={!seciliHariciSifreKimlik}
-                        />
-                    </Yukleniyor>
-                </div>
-                <div className="field col">
-                    <Yukleniyor tip='engelle'>
-                        <Button 
-                            label={t('anaEkranSifreler.sil.label')}
-                            className='w-full h-full' 
-                            onClick={silTiklandi} 
-                            severity="danger" 
-                            outlined
-                            disabled={!seciliHariciSifreKimlik}
-                        />
-                    </Yukleniyor>
-                </div>
+            <div className="formgrid grid mb-3">
+                {/* Removed the entire "Şifreyi Sil" button column */}
             </div>
             <div className="flex justify-content-end">
                 <div className="grid">
@@ -257,18 +227,17 @@ const AnaEkranSifreler = () => {
                         <Button 
                             icon="pi pi-compass"
                             severity="help"
-                            title={t('anaEkranSifreler.rehber.title')}
+                            title='Rehber'
                         />
                     </div>
                     }
                     <div className="col">
                         <Yukleniyor tip='engelle'>
                             <Button 
+                                type="button"
                                 icon="pi pi-refresh"
                                 onClick={yenileTiklandi}
-                                severity="secondary"
-                                title={t('anaEkranSifreler.yenile.title')}
-                                className='h-full'
+                                className='h-full p-button-secondary'
                             />
                         </Yukleniyor>
                     </div>

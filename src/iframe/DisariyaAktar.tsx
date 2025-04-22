@@ -44,22 +44,22 @@ const DisariyaAktar = () => {
 
     return (
         <>
-            <h3>Dışarıya Aktar</h3>
-            <div className="flex align-items-center">
-                <Checkbox inputId="ingredient1" name="pizza" value="Cheese" onChange={e => disaAktarSifreliDegistir(e.checked!)} checked={disaAktarSifreli} />
-                <label htmlFor="ingredient1" className="ml-2">Şifrelenmiş haliyle aktar</label>
+            <h3 className="mb-3">Dışarıya Aktar</h3>
+            <div className="p-field-checkbox mb-3">
+                <Checkbox inputId="sifreliAktar" onChange={e => disaAktarSifreliDegistir(e.checked!)} checked={disaAktarSifreli} />
+                <label htmlFor="sifreliAktar" className="ml-2">Şifrelenmiş haliyle aktar</label>
             </div>
-            <div className="flex flex-wrap gap-3">
-                <div className="flex align-items-center">
+            <div className="flex flex-wrap gap-3 mb-3">
+                <div className="p-field-radiobutton">
                     <RadioButton inputId="json" value="json" onChange={(e) => disaAktarFormatDegistir(e.value)} checked={disaAktarFormat === 'json'} />
                     <label htmlFor="json" className="ml-2">Json</label>
                 </div>
-                <div className="flex align-items-center">
+                <div className="p-field-radiobutton">
                     <RadioButton inputId="csv" value="csv" onChange={(e) => disaAktarFormatDegistir(e.value)} checked={disaAktarFormat === 'csv'} />
                     <label htmlFor="csv" className="ml-2">Csv</label>
                 </div>
             </div>
-            <div className='flex'>
+            <div className='p-field'>
                 <Button 
                     type='button' 
                     label='Aktar'

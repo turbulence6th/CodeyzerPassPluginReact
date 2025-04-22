@@ -8,16 +8,15 @@ import {
   mesajBelirle, sifreGuncelDurumBelirle, yukleniyorBelirle,
   hariciSifreListesiBelirle,
   kullaniciBelirle
-} from './ortak/CodeyzerReducer';
-import { MesajTipi } from './ortak/BildirimMesaji';
-import { useTranslation } from 'react-i18next';
-import PasswordRequest from './ortak/PasswordRequest';
-import { HariciSifreApi } from './ortak/HariciSifreApi';
-import { HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from './ortak/HariciSifreDTO';
-import { base64ToUint8Array, bcryptHash, checkBcrypt, decryptWithAES, deriveAesKey, sha512 } from './ortak/CryptoUtil';
-import { api } from './ortak/SunucuApi';
-import { KullaniciApi } from './ortak/KullaniciApi';
-import { CodeyzerPassErrorResponseDTO } from './ortak/CodeyzerPassDTO';
+} from './store/CodeyzerReducer';
+import { MesajTipi } from './types/BildirimMesaji';
+import PasswordRequest from './components/PasswordRequest';
+import { HariciSifreApi } from './services/HariciSifreApi';
+import { HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from './types/HariciSifreDTO';
+import { base64ToUint8Array, bcryptHash, checkBcrypt, decryptWithAES, deriveAesKey, sha512 } from './utils/CryptoUtil';
+import { api } from './services/SunucuApi';
+import { KullaniciApi } from './services/KullaniciApi';
+import { CodeyzerPassErrorResponseDTO } from './types/CodeyzerPassDTO';
 
 const mesajTip2PrimeType = (tip: MesajTipi): 'info' | 'warn' | 'error' => {
   switch (tip) {
@@ -38,7 +37,6 @@ const isInPopup = () =>
 function App() {
   const dispatch = useAppDispatch();
   const toast = useRef<Toast>(null);
-  const { t, i18n } = useTranslation();
   const aygitYonetici = AygitYoneticiKullan();
 
   const [AnaBilesen, anaBilesenDegistir] = useState<React.LazyExoticComponent<() => JSX.Element>>();
@@ -154,13 +152,12 @@ function App() {
     api.defaults.baseURL = url;
   }, [url]);
 
-  // 4. Dil ve ana şifre getir
+  // 4. Ana şifre getir
   useEffect(() => {
-    aygitYonetici?.mevcutDil().then(dil => i18n.changeLanguage(dil));
     aygitYonetici?.anaSifreGetir().then(anaSifre => {
       if (anaSifre) dispatch(sifreBelirle(anaSifre));
     });
-  }, [aygitYonetici, i18n, dispatch]);
+  }, [aygitYonetici, dispatch]);
 
   // 5. Mesaj gösterimi
   useEffect(() => {

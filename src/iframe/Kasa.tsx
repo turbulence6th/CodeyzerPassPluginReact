@@ -3,13 +3,17 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useSelector } from 'react-redux';
 import { AygitYoneticiKullan, RootState, useAppDispatch } from '..';
-import { HariciSifreDesifre } from '../ortak/HariciSifreDTO';
+import { HariciSifreDesifre } from '../types/HariciSifreDTO';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { mesajBelirle } from '../ortak/CodeyzerReducer';
-import { MesajTipi } from '../ortak/BildirimMesaji';
+import { mesajBelirle, sifreGuncelDurumBelirle } from '../store/CodeyzerReducer';
+import { MesajTipi } from '../types/BildirimMesaji';
 import { FilterMatchMode } from 'primereact/api';
-import Yukleniyor from '../ortak/Yukleniyor';
+import Yukleniyor from '../components/Yukleniyor';
+import { Card } from "primereact/card";
+import SifreGuncelleModal from './components/SifreGuncelleModal';
+import { dialogGoster } from '../utils/DialogUtil';
+import { HariciSifreApi } from '../services/HariciSifreApi';
 
 interface HariciSifreDesifreTabloSatir extends HariciSifreDesifre {
     sifreGoster: boolean
@@ -22,6 +26,9 @@ const Kasa = () => {
     const [hariciSifreDesifreTabloSatirListesi, hariciSifreDesifreTabloSatirListesiDegistir] = useState<HariciSifreDesifreTabloSatir[]>();
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const dispatch = useAppDispatch();
+
+    const [modalGoster, modalGosterDegistir] = useState(false);
+    const [seciliSifre, seciliSifreDegistir] = useState<HariciSifreDesifreTabloSatir | null>(null);
 
     useEffect(() => {
         hariciSifreDesifreTabloSatirListesiDegistir(
@@ -46,12 +53,40 @@ const Kasa = () => {
         hariciSifreDesifreTabloSatirListesiDegistir([...hariciSifreDesifreTabloSatirListesi!]);
     };
 
+    const guncelleTiklandi = (hsd: HariciSifreDesifreTabloSatir) => {
+        seciliSifreDegistir(hsd);
+        modalGosterDegistir(true);
+    };
+
+    const modalKapat = () => {
+        modalGosterDegistir(false);
+        seciliSifreDegistir(null);
+    };
+
+    const silTiklandi = (hsd: HariciSifreDesifreTabloSatir) => {
+        dialogGoster(
+            'Onay',
+            `'${hsd.metadata.url || hsd.metadata.android || hsd.data.kullaniciAdi}' kaydını silmek istediğinizden emin misiniz?`,
+            async () => {
+                try {
+                    await HariciSifreApi.delete(hsd.id);
+                    dispatch(sifreGuncelDurumBelirle(false));
+                    dispatch(mesajBelirle({ tip: MesajTipi.BILGI, icerik: 'Şifre başarıyla silindi.'}));
+                } catch (error) {
+                    console.error("Şifre silinirken hata:", error);
+                    dispatch(mesajBelirle({ tip: MesajTipi.HATA, icerik: 'Şifre silinirken bir hata oluştu.'}));
+                }
+            }
+        );
+    };
+
     const onGlobalFilterChange = (e: any) => {
         const value = e.target.value;
         setGlobalFilterValue(value);
     };
 
     const icerik = (
+        <Card title="Kayıtlı Şifreler" className="mt-3">
         <DataTable 
             value={hariciSifreDesifreTabloSatirListesi} 
             sortField="icerik.platform" 
@@ -59,6 +94,7 @@ const Kasa = () => {
             removableSort
             stripedRows 
             rowHover
+            rowClassName={() => 'kasa-data-row'}
             header={
                 <div className="flex justify-content-end">
                     <span className="p-input-icon-left">
@@ -79,101 +115,186 @@ const Kasa = () => {
             }
         >
             <Column 
-                field='icerik.platform'
+                    field='metadata.url'
                 header="Platform" 
                 body={
-                    (hsd: HariciSifreDesifreTabloSatir) => (
-                        <Yukleniyor tip='iskelet' height='3rem'>
-                            <InputText 
-                                value={hsd.metadata.url || ''} 
-                                className='w-full h-full'
-                            />
-                        </Yukleniyor>
-                )}
-                className="p-inputtext-sm"
+                        (hsd: HariciSifreDesifreTabloSatir) => {
+                            const content = hsd.metadata.url || '';
+                            return (
+                                <span 
+                                    title={content} 
+                                    className="stacked-text-right" 
+                                    style={{ 
+                                        display: 'inline-block', 
+                                        width: '100%', 
+                                        whiteSpace: 'nowrap', 
+                                        overflow: 'hidden', 
+                                        textOverflow: 'ellipsis' 
+                                    }}>
+                                        {content}
+                                    </span>
+                            );
+                        }
+                    }
                 sortable
-                style={{ width: '23%' }}
+                    
+                    bodyStyle={{ paddingTop: '0.75rem', paddingBottom: '0.75rem', paddingLeft: '0.5rem' }}
             />
             <Column 
-                field='icerik.androidPaket'
+                    field='metadata.android'
                 header="Android" 
                 body={
-                    (hsd: HariciSifreDesifreTabloSatir) => (
-                        <Yukleniyor tip='iskelet' height='3rem'>
-                            <InputText 
-                                value={hsd.metadata.android || ''} 
-                                className='w-full h-full'
-                            />
-                        </Yukleniyor>
-                )}
-                className="p-inputtext-sm"
+                        (hsd: HariciSifreDesifreTabloSatir) => {
+                            const content = hsd.metadata.android || '';
+                            return (
+                                <span 
+                                    title={content} 
+                                    className="stacked-text-right" 
+                                    style={{ 
+                                        display: 'inline-block', 
+                                        width: '100%', 
+                                        whiteSpace: 'nowrap', 
+                                        overflow: 'hidden', 
+                                        textOverflow: 'ellipsis' 
+                                    }}>
+                                        {content}
+                                    </span>
+                            );
+                        }
+                    }
                 sortable
-                style={{ width: '23%' }}
+                    
+                    bodyStyle={{ paddingTop: '0.75rem', paddingBottom: '0.75rem', paddingLeft: '0.5rem' }}
             />
             <Column 
-                field='icerik.kullaniciAdi'
+                    field='data.kullaniciAdi'
                 header="Kullanıcı adı" 
                 body={
-                    (hsd: HariciSifreDesifreTabloSatir) => (
-                        <Yukleniyor tip='iskelet' height='3rem'>
-                            <InputText 
-                                value={hsd.data.kullaniciAdi || ''} 
-                                className='w-full h-full'
-                            />
-                        </Yukleniyor>
-                )}
-                className="p-inputtext-sm"
+                        (hsd: HariciSifreDesifreTabloSatir) => {
+                            const content = hsd.data.kullaniciAdi || '';
+                            return (
+                                <span 
+                                    title={content} 
+                                    className="stacked-text-right" 
+                                    style={{ 
+                                        display: 'inline-block', 
+                                        width: '100%', 
+                                        whiteSpace: 'nowrap', 
+                                        overflow: 'hidden', 
+                                        textOverflow: 'ellipsis' 
+                                    }}>
+                                        {content}
+                                    </span>
+                            );
+                        }
+                    }
                 sortable
-                style={{ width: '23%' }}
+                    
+                    bodyStyle={{ paddingTop: '0.75rem', paddingBottom: '0.75rem', paddingLeft: '0.5rem' }}
+                    headerClassName="no-wrap-header"
             />
             <Column 
+                    field='data.sifre'
                 header="Şifre" 
                 body={
-                    (hsd: HariciSifreDesifreTabloSatir) => (
-                        <Yukleniyor tip='iskelet' height='3rem'>
-                            <InputText 
-                                value={hsd.data.sifre || ''} 
-                                type={hsd.sifreGoster ? 'text' : 'password'}
-                                className='w-full h-full'
-                            />
-                        </Yukleniyor>
-                )}
-                className="p-inputtext-sm"
-                style={{ width: '23%' }}
+                        (hsd: HariciSifreDesifreTabloSatir) => {
+                           const spanStyle: React.CSSProperties = {
+                            display: 'inline-block', 
+                            width: '100%', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis' 
+                           };
+                           return (
+                               <>
+                                   <span style={{
+                                       ...spanStyle,
+                                       display: hsd.sifreGoster ? 'inline-block' : 'none'
+                                   }}>
+                                       {hsd.data.sifre}
+                                   </span>
+                                   <span style={{
+                                       ...spanStyle,
+                                       display: !hsd.sifreGoster ? 'inline-block' : 'none' 
+                                   }}>
+                                       {'••••••••'}
+                                   </span>
+                               </>
+                           );
+                        }
+                    }
+                    
+                    bodyStyle={{ paddingTop: '0.75rem', paddingBottom: '0.75rem', paddingLeft: '0.5rem' }}
             />
             <Column 
+                    header="Eylemler" 
                 body={
                     (hsd: HariciSifreDesifreTabloSatir) => (
-                        <div className='flex gap-2'>
+                            <div className='flex gap-2'>
+                                <Yukleniyor tip='engelle'>
+                                    <Button 
+                                        type='button' 
+                                        icon={"pi pi-pencil"} 
+                                        className="p-button-info p-button-outlined" 
+                                        onClick={() => guncelleTiklandi(hsd)} 
+                                        rounded
+                                        size='small'
+                                        title="Güncelle"
+                                    />
+                                </Yukleniyor>
                             <Yukleniyor tip='engelle'>
                                 <Button 
                                     type='button' 
                                     icon={"pi pi-clone"} 
-                                    className="p-button-success" 
+                                    className="p-button-secondary p-button-outlined" 
                                     onClick={() => kopyalaTiklandi(hsd)} 
                                     rounded
                                     size='small'
+                                    title="Kopyala"
                                 />
                             </Yukleniyor>
                             <Yukleniyor tip='engelle'>
                                 <Button 
                                     type='button' 
-                                    icon={"pi " + (hsd.sifreGoster ? "pi-eye" : "pi-eye-slash")} 
-                                    className="p-button-success" 
+                                    icon={hsd.sifreGoster ? "pi pi-eye-slash" : "pi pi-eye"} 
+                                    className="p-button-help p-button-outlined" 
                                     onClick={() => sifreGosterTiklandi(hsd)} 
                                     rounded
                                     size='small'
+                                    title={hsd.sifreGoster ? "Gizle" : "Göster"}
+                                />
+                            </Yukleniyor>
+                            <Yukleniyor tip='engelle'>
+                                <Button 
+                                    type='button' 
+                                    icon={"pi pi-trash"} 
+                                    className="p-button-danger p-button-outlined" 
+                                    onClick={() => silTiklandi(hsd)} 
+                                    rounded
+                                    size='small'
+                                    title="Sil"
                                 />
                             </Yukleniyor>
                         </div>
                     )
                 }
+                    
+                    bodyStyle={{ textAlign: 'center', paddingTop: '0.75rem', paddingBottom: '0.75rem' }}
             />
         </DataTable>
+        </Card>
     );
 
     return (
-        icerik
+        <>
+            {icerik}
+
+            <SifreGuncelleModal
+                visible={modalGoster}
+                onHide={modalKapat}
+                sifreToUpdate={seciliSifre}
+            />
+        </>
     );
 };
 

@@ -1,8 +1,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
-import { Kullanici } from "./KullaniciDTO";
-import { HariciSifreDTO, HariciSifreDesifre } from "./HariciSifreDTO";
+import { Kullanici } from "../types/KullaniciDTO";
+import { HariciSifreDTO, HariciSifreDesifre } from "../types/HariciSifreDTO";
 import AnaEkranTabEnum from "../popup/AnaEkranTabEnum";
-import BildirimMesaji from "./BildirimMesaji";
+import BildirimMesaji from "../types/BildirimMesaji";
 
 enum CodeyzerActionType {
     KULLANICI_BELIRLE = 'KULLANICI_BELIRLE',
@@ -201,12 +201,15 @@ export {
     kullaniciBelirle, 
     hariciSifreListesiBelirle,
     urlBelirle,
-    hariciSifreDesifreListesiBelirle, 
-    seciliHariciSifreKimlikBelirle, 
-    aktifAnaEkranTabBelirle, 
+    hariciSifreDesifreListesiBelirle,
+    seciliHariciSifreKimlikBelirle,
+    aktifAnaEkranTabBelirle,
     sifreGuncelDurumBelirle,
     mesajBelirle,
     yukleniyorBelirle,
+    sifirla,
     sifreBelirle,
-    sifirla
 };
+
+// Tipleri sadece export type ile export ettim.
+export type { CodeyzerDepoReducerState, CodeyzerHafizaReducerState }; 

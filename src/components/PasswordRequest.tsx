@@ -39,4 +39,4 @@ const PasswordRequest: React.FC<PasswordRequestProps> = ({ onSubmit }) => {
     );
 };
 
-export default PasswordRequest;
+export default PasswordRequest; 

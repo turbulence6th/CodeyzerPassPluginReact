@@ -1,4 +1,4 @@
-import { JwtResponseDTO, KullaniciLoginRequest, KullaniciOlusturRequestDTO, TokenRefreshRequestDTO } from "./KullaniciDTO";
+import { JwtResponseDTO, KullaniciLoginRequest, KullaniciOlusturRequestDTO, TokenRefreshRequestDTO } from "../types/KullaniciDTO";
 import { SunucuApi } from "./SunucuApi";
 
 export class KullaniciApi {
@@ -15,4 +15,4 @@ export class KullaniciApi {
     static async refreshToken(request: TokenRefreshRequestDTO): Promise<JwtResponseDTO> {
         return await SunucuApi.post(`${this.BASE_URL}/refresh`, request);
     }
-}
+} 
