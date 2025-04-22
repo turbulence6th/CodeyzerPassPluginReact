@@ -13,10 +13,11 @@ import { MesajTipi } from './types/BildirimMesaji';
 import PasswordRequest from './components/PasswordRequest';
 import { HariciSifreApi } from './services/HariciSifreApi';
 import { HariciSifreDesifre, HariciSifreHariciSifreData, HariciSifreMetadata } from './types/HariciSifreDTO';
-import { base64ToUint8Array, bcryptHash, checkBcrypt, decryptWithAES, deriveAesKey, sha512 } from './utils/CryptoUtil';
+import { base64ToUint8Array, bcryptHash, checkBcrypt, sha512 } from './utils/CryptoUtil';
 import { api } from './services/SunucuApi';
 import { KullaniciApi } from './services/KullaniciApi';
 import { CodeyzerPassErrorResponseDTO } from './types/CodeyzerPassDTO';
+import { AuthService } from './services/AuthService';
 
 const mesajTip2PrimeType = (tip: MesajTipi): 'info' | 'warn' | 'error' => {
   switch (tip) {
@@ -188,16 +189,11 @@ function App() {
 
   const hariciSifreDesifreEt = async () => {
     if (sifre) {
-      const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
-      const hariciSifreDesifreListesi: HariciSifreDesifre[] = await Promise.all(hariciSifreListesi.map(async hariciSifreDTO => {
-        const iv = base64ToUint8Array(hariciSifreDTO.aesIV);
-        return {
-          id: hariciSifreDTO.id,
-          data: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedData, iv)) as HariciSifreHariciSifreData,
-          metadata: JSON.parse(await decryptWithAES(aesKey, hariciSifreDTO.encryptedMetadata, iv)) as HariciSifreMetadata,
-          aesIV: hariciSifreDTO.aesIV
-        };
-      }));
+
+      const authService = await AuthService.createByKullaniciKimlik(kullanici.kullaniciKimlik, sifre);
+
+      const hariciSifreDesifreListesi: HariciSifreDesifre[] = await Promise.all(hariciSifreListesi
+        .map(async (hariciSifreDTO) => await authService.sifrelenmisVeriCoz(hariciSifreDTO)));
       dispatch(hariciSifreDesifreListesiBelirle(hariciSifreDesifreListesi));
       aygitYonetici?.sifreListesiGuncelle();
     }

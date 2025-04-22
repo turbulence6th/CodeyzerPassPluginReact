@@ -1,5 +1,5 @@
 export interface HariciSifreDTO {
-    id: string;
+    id?: string;
     encryptedData: string;
     encryptedMetadata: string;
     aesIV: string;
@@ -19,10 +19,10 @@ export interface HariciSifreUpdateRequestDTO {
 }
 
 export interface HariciSifreDesifre {
-    id: string;
+    id?: string;
     data: HariciSifreHariciSifreData;
     metadata: HariciSifreMetadata;
-    aesIV: string;
+    aesIV?: string;
 }
 
 export interface HariciSifreHariciSifreData {

@@ -14,6 +14,7 @@ import PlatformTipi from "../types/PlatformTipi";
 import Yukleniyor from "../components/Yukleniyor";
 import { HariciSifreHariciSifreData, HariciSifreMetadata } from "../types/HariciSifreDTO";
 import { HariciSifreApi } from "../services/HariciSifreApi";
+import { AuthService } from "../services/AuthService";
 
 interface HariciSifreEkleForm {
     url: string;
@@ -117,30 +118,31 @@ const AnaEkranSifreEkle = () => {
             return;
         }
 
-        const iv = generateIV();
-        const aesKey = await deriveAesKey(sifre, kullanici.kullaniciKimlik);
-        const encryptedData = await encryptWithAES(aesKey, JSON.stringify({ 
-            kullaniciAdi: hariciSifreEkleForm.kullaniciAdi, 
-            sifre: hariciSifreEkleForm.sifre
-        } as HariciSifreHariciSifreData), iv);
+        const authService = await AuthService.createByKullaniciKimlik(kullanici.kullaniciKimlik, sifre);
 
-        const encryptedMetadata = await encryptWithAES(aesKey, JSON.stringify({ 
-            url: hariciSifreEkleForm.url, 
-            android: hariciSifreEkleForm.android
-        } as HariciSifreMetadata), iv);
+        const hariciSifreDto = await authService.sifrelenmisVeriOlustur({
+            data: {
+                kullaniciAdi: hariciSifreEkleForm.kullaniciAdi,
+                sifre: hariciSifreEkleForm.sifre
+            },
+            metadata: {
+                url: hariciSifreEkleForm.url,
+                android: hariciSifreEkleForm.android
+            }
+        });
 
         if (!seciliHariciSifreKimlik) {
             await HariciSifreApi.save({
                 id: crypto.randomUUID(),
-                encryptedData,
-                encryptedMetadata,
-                aesIV: uint8ArrayToBase64(iv),
+                encryptedData: hariciSifreDto.encryptedData,
+                encryptedMetadata: hariciSifreDto.encryptedMetadata,
+                aesIV: hariciSifreDto.aesIV,
             });
         } else {
             await HariciSifreApi.update(seciliHariciSifreKimlik, {
-                encryptedData,
-                encryptedMetadata,
-                aesIV: uint8ArrayToBase64(iv),
+                encryptedData: hariciSifreDto.encryptedData,
+                encryptedMetadata: hariciSifreDto.encryptedMetadata,
+                aesIV: hariciSifreDto.aesIV,
             });
         }
 

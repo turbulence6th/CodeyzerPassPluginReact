@@ -83,7 +83,7 @@ const SifreGuncelleModal: React.FC<SifreGuncelleModalProps> = ({ visible, onHide
             const encryptedData = await encryptWithAES(aesKey, JSON.stringify(dataToEncrypt), iv);
             const encryptedMetadata = await encryptWithAES(aesKey, JSON.stringify(metadataToEncrypt), iv);
 
-            await HariciSifreApi.update(sifreToUpdate.id, {
+            await HariciSifreApi.update(sifreToUpdate.id!, {
                 encryptedData,
                 encryptedMetadata,
                 aesIV: uint8ArrayToBase64(iv),

@@ -4,27 +4,22 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useSelector } from 'react-redux';
 import { RootState, useAppDispatch } from '..';
-import { hariciSifreListesiBelirle, kullaniciBelirle, sifreBelirle } from '../store/CodeyzerReducer';
+import { hariciSifreListesiBelirle, kullaniciBelirle, sifreBelirle, sifreGuncelDurumBelirle } from '../store/CodeyzerReducer';
 import { usePasswordValidation } from '../hooks/usePasswordValidation';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import { classNames } from 'primereact/utils';
 import { useValidator } from '@validator.tool/hook';
 import {
-    vaultIdOlustur,
-    deriveAesKey,
-    encryptWithAES,
     generateIV,
     uint8ArrayToBase64,
-    sha512,
-    bcryptHash
 } from '../utils/CryptoUtil';
-import { VAULT_SALT } from '../constants/Constants';
-import { HariciSifreDTO, HariciSifreDesifre, SifreGuncelleHariciSifreDTO } from '../types/HariciSifreDTO';
+import { HariciSifreDesifre, SifreGuncelleHariciSifreDTO } from '../types/HariciSifreDTO';
 import { KullaniciApi } from '../services/KullaniciApi';
 import {
     SifreGuncelleRequestDTO,
     JwtResponseDTO
 } from '../types/KullaniciDTO';
+import { AuthService } from '../services/AuthService';
 
 const HesapPaneli = () => {
     // Redux state
@@ -89,45 +84,35 @@ const HesapPaneli = () => {
         }
 
         try {
-            const uretilenKimlik = await vaultIdOlustur(hesapKullaniciAdi, reduxSifre, VAULT_SALT);
+            const eskiAuthService = await AuthService.createByKullaniciKimlik(kullanici.kullaniciKimlik, reduxSifre);
 
-            if (uretilenKimlik !== kullanici.kullaniciKimlik) {
+            if (!(await eskiAuthService.kullaniciAdiDogrula(hesapKullaniciAdi))) {
                 kimlikEslesmeHatasiBelirle("Girilen kullanıcı adı mevcut kimlikle eşleşmiyor.");
                 fieldValidator.showMessages();
                 forceFieldUpdate();
                 return;
             }
 
-            const yeniKullaniciKimlik = await vaultIdOlustur(hesapKullaniciAdi, password, VAULT_SALT);
-
-            const sha512Hash = await sha512(password);
-            const yeniSifreBcryptHash = await bcryptHash(sha512Hash);
-
-            const yeniAnahtar = await deriveAesKey(password, VAULT_SALT);
+            const yeniAuthService = await AuthService.createByKullaniciAdi(hesapKullaniciAdi, password);
 
             const yeniSifrelenmisListeDto: SifreGuncelleHariciSifreDTO[] = await Promise.all(
                 hariciSifreDesifreListesi.map(async (item: HariciSifreDesifre): Promise<SifreGuncelleHariciSifreDTO> => {
-                    const iv = generateIV();
-                    const ivBase64 = uint8ArrayToBase64(iv);
-                    const dataString = JSON.stringify(item.data);
-                    const metadataString = JSON.stringify(item.metadata);
-
-                    const encryptedData = await encryptWithAES(yeniAnahtar, dataString, iv);
-                    const encryptedMetadata = await encryptWithAES(yeniAnahtar, metadataString, iv);
+                    const hariciSifreDto = await yeniAuthService.sifrelenmisVeriOlustur(item);
 
                     return {
-                        eskiId: item.id,
+                        eskiId: item.id!,
                         id: crypto.randomUUID(),
-                        encryptedData: encryptedData,
-                        encryptedMetadata: encryptedMetadata,
-                        aesIV: ivBase64
+                        encryptedData: hariciSifreDto.encryptedData,
+                        encryptedMetadata: hariciSifreDto.encryptedMetadata,
+                        aesIV: hariciSifreDto.aesIV
                     };
                 })
             );
 
+            const yeniKullaniciKimlik = yeniAuthService.kullaniciKimlikGetir();
             const requestDto: SifreGuncelleRequestDTO = {
                 yeniKullaniciKimlik: yeniKullaniciKimlik,
-                yeniSifreHash: sha512Hash,
+                yeniSifreHash: await yeniAuthService.sifreSha512Olustur(),
                 yeniHariciSifreList: yeniSifrelenmisListeDto
             };
 
@@ -136,11 +121,12 @@ const HesapPaneli = () => {
             dispatch(kullaniciBelirle({
                 ...kullanici,
                 kullaniciKimlik: yeniKullaniciKimlik,
-                sifreHash: yeniSifreBcryptHash,
+                sifreHash: await yeniAuthService.sifreBcryptHashOlustur(),
                 accessToken: response.accessToken,
                 refreshToken: response.refreshToken
             }));
             dispatch(sifreBelirle(password));
+            dispatch(sifreGuncelDurumBelirle(false));
 
             console.log("Şifre başarıyla değiştirildi (API & Client).");
             handlePasswordChange('');

@@ -68,7 +68,10 @@ const codeyzerDepoReducer = (state: CodeyzerDepoReducerState = CODEYZER_DEPO_VAR
                 url: action.payload as string
             }
         case CodeyzerActionType.SIFIRLA:
-            return CODEYZER_DEPO_VARSAYILAN_STATE;
+            return {
+                ...CODEYZER_DEPO_VARSAYILAN_STATE,
+                url: state.url
+            }
         
         default:
             return state

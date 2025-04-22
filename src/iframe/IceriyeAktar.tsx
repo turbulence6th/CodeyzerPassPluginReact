@@ -184,7 +184,7 @@ const IceriyeAktar = () => {
             <div 
                 className={classNames("col-12 hover:surface-hover cursor-pointer", { hariciSifreDesifreIceriAlSecili: hsd.id === seciliHariciSifreDesifreIceriAktarKimlik})} 
                 style={{ height: '75px' }} 
-                onClick={() => seciliHariciSifreDesifreIceriAktarKimlikDegistir(hsd.id)}
+                onClick={() => seciliHariciSifreDesifreIceriAktarKimlikDegistir(hsd.id!)}
             >
                 <div className='flex p-3 gap-3 align-items-center pl-3'>
                     <div>
@@ -238,19 +238,19 @@ const IceriyeAktar = () => {
     
         if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.EKLE) {
             await HariciSifreApi.save({
-                id: hariciSifreDesifre.id,
+                id: hariciSifreDesifre.id!,  
                 encryptedData,
                 encryptedMetadata,
                 aesIV: uint8ArrayToBase64(iv),
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.GUNCELLE) {
-            await HariciSifreApi.update(hariciSifreDesifre.id, {
+            await HariciSifreApi.update(hariciSifreDesifre.id!, {
                 encryptedData,
                 encryptedMetadata,
                 aesIV: uint8ArrayToBase64(iv),
             });
         } else if (hariciSifreDesifre.durum === HariciSifreDesifreIceriyeAktarDurum.SIL) {
-            await HariciSifreApi.delete(hariciSifreDesifre.id);
+            await HariciSifreApi.delete(hariciSifreDesifre.id!);
         }
 
         dispatch(sifreGuncelDurumBelirle(false));
@@ -277,19 +277,19 @@ const IceriyeAktar = () => {
             
             if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.EKLE) {
                 await HariciSifreApi.save({
-                    id: hsd.id,
+                    id: hsd.id!,
                     encryptedData,
                     encryptedMetadata,
                     aesIV
                 });
             } else if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.GUNCELLE) {
-                await HariciSifreApi.update(hsd.id, {
+                await HariciSifreApi.update(hsd.id!, {
                     encryptedData,
                     encryptedMetadata,
                     aesIV
                 });
             } else if (hsd.durum === HariciSifreDesifreIceriyeAktarDurum.SIL) {
-                await HariciSifreApi.delete(hsd.id);
+                await HariciSifreApi.delete(hsd.id!);
             }
         }
 

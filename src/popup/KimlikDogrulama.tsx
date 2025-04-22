@@ -3,12 +3,11 @@ import { AygitYoneticiKullan, RootState, useAppDispatch } from '..';
 import { sifreBelirle, sifreGuncelDurumBelirle, urlBelirle, kullaniciBelirle } from '../store/CodeyzerReducer';
 import { classNames } from 'primereact/utils';
 import { useSelector } from 'react-redux';
-import { bcryptHash, sha512, vaultIdOlustur } from '../utils/CryptoUtil';
 import { KullaniciApi } from '../services/KullaniciApi';
 import { TabView, TabPanel } from 'primereact/tabview';
 import OturumAcFormu from './OturumAcFormu';
 import KayitOlFormu from './KayitOlFormu';
-import { VAULT_SALT } from '../constants/Constants';
+import { AuthService } from '../services/AuthService';
 
 const KimlikDogrulama = () => {
     
@@ -17,8 +16,11 @@ const KimlikDogrulama = () => {
     const aygitYonetici = AygitYoneticiKullan();
 
     const oturumAc = async (kullaniciAdi: string, sifre: string) => {
-        const kullaniciKimlik = await vaultIdOlustur(kullaniciAdi, sifre, VAULT_SALT);
-        const sifreHash = await sha512(sifre);
+
+        const authService = await AuthService.createByKullaniciAdi(kullaniciAdi, sifre);
+        
+        const kullaniciKimlik = authService.kullaniciKimlikGetir();
+        const sifreHash = await authService.sifreSha512Olustur();
 
         const { accessToken, refreshToken } = await KullaniciApi.login({
             kullaniciKimlik,
@@ -27,7 +29,7 @@ const KimlikDogrulama = () => {
 
         dispatch(kullaniciBelirle({
             kullaniciKimlik,
-            sifreHash: await bcryptHash(sifre),
+            sifreHash: await authService.sifreBcryptHashOlustur(),
             accessToken,
             refreshToken
         }));
@@ -37,8 +39,11 @@ const KimlikDogrulama = () => {
     };
 
     const kayitOl = async (kullaniciAdi: string, sifre: string) => {
-        const kullaniciKimlik = await vaultIdOlustur(kullaniciAdi, sifre, VAULT_SALT);
-        const sifreHash = await sha512(sifre);
+
+        const authService = await AuthService.createByKullaniciAdi(kullaniciAdi, sifre);
+
+        const kullaniciKimlik = authService.kullaniciKimlikGetir();
+        const sifreHash = await authService.sifreSha512Olustur();
 
         const { accessToken, refreshToken } = await KullaniciApi.register({
             kullaniciKimlik,
@@ -47,7 +52,7 @@ const KimlikDogrulama = () => {
 
         dispatch(kullaniciBelirle({
             kullaniciKimlik,
-            sifreHash: await bcryptHash(sifre),
+            sifreHash: await authService.sifreBcryptHashOlustur(),
             accessToken,
             refreshToken
         }));

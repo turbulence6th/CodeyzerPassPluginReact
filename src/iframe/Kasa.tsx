@@ -69,7 +69,7 @@ const Kasa = () => {
             `'${hsd.metadata.url || hsd.metadata.android || hsd.data.kullaniciAdi}' kaydını silmek istediğinizden emin misiniz?`,
             async () => {
                 try {
-                    await HariciSifreApi.delete(hsd.id);
+                    await HariciSifreApi.delete(hsd.id!);
                     dispatch(sifreGuncelDurumBelirle(false));
                     dispatch(mesajBelirle({ tip: MesajTipi.BILGI, icerik: 'Şifre başarıyla silindi.'}));
                 } catch (error) {
